@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useRef, lazy, Suspense } from 'react';
 import { db, auth } from '../lib/firebase';
-import { collection, query, orderBy, onSnapshot, doc, Timestamp, addDoc, updateDoc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, Timestamp, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { handleFirestoreError } from '../lib/errorHandler';
 import { OperationType, Transaction, UserProfile, ScheduledEvent } from '../types';
 import HPBar from './HPBar';
@@ -55,6 +55,24 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<'quest' | 'oracle' | 'report' | 'calendar' | 'settings' | 'guidebook'>('quest');
   const [activeWidgetIndex, setActiveWidgetIndex] = useState(0);
 
+  const [showStarterInput, setShowStarterInput] = useState(false);
+  const [starterTarget, setStarterTarget] = useState('');
+
+  const handleStartAdventure = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!auth.currentUser || !starterTarget) return;
+    const uid = auth.currentUser.uid;
+    try {
+      await updateDoc(doc(db, 'users', uid), {
+        customHPCap: Number(starterTarget),
+        updatedAt: serverTimestamp()
+      });
+      setShowStarterInput(false);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -95,7 +113,7 @@ export default function Dashboard() {
           const nextDue = calculateNextDueDate(ev.nextDueDate.toDate(), ev.frequency);
           
           const newTx: Transaction = {
-            type: ev.rune === 'potion' && ev.type === 'Bounty' ? 'PotionBuy' : (ev.type as any),
+            type: ev.rune === 'potion' ? (ev.type === 'Bounty' ? 'PotionBuy' : 'PotionDrink') : (ev.type === 'Toll' ? 'Expense' : 'Gain'),
             amount: ev.amount,
             category: ev.category || 'Tithe',
             rune: ev.rune === 'potion' ? 'POTION_STASH' : ev.rune,
@@ -126,11 +144,12 @@ export default function Dashboard() {
     const nextDue = calculateNextDueDate(ev.nextDueDate.toDate(), ev.frequency);
     
     const newTx: Transaction = {
-      type: ev.rune === 'potion' && ev.type === 'Bounty' ? 'PotionBuy' : (ev.type as any),
+      type: ev.rune === 'potion' ? (ev.type === 'Bounty' ? 'PotionBuy' : 'PotionDrink') : (ev.type === 'Toll' ? 'Expense' : 'Gain'),
       amount: ev.amount,
       category: ev.category || 'Tithe',
       rune: ev.rune === 'potion' ? 'POTION_STASH' : ev.rune,
       timestamp: Timestamp.now(),
+      description: ev.name
     };
 
     await addDoc(collection(db, 'users', uid, 'transactions'), newTx);
@@ -200,8 +219,8 @@ export default function Dashboard() {
   }, [transactions]);
 
   // Derived calculations for HP
-  // Assuming HP max is daily budget: targetDailyExpense by default, fallback to legacy math
-  const maxHP = profile ? (profile.customHPCap || profile.targetDailyExpense || Math.max(0, (profile.monthlyIncome - (profile.targetSavings || 0)) / 30)) : 100;
+  const isNewAccount = !profile?.customHPCap;
+  const maxHP = profile?.customHPCap || 0;
   
   let currentHP = maxHP;
   let isHealing = false;
@@ -218,6 +237,8 @@ export default function Dashboard() {
     }
     // PotionBuy does not affect HP
   });
+
+  currentHP = Math.min(currentHP, maxHP);
 
   return (
     <div className="max-w-[1200px] w-full mx-auto p-4 md:p-6 flex flex-col gap-6 h-full min-h-screen relative">
@@ -277,41 +298,84 @@ export default function Dashboard() {
           </div>
         </div>
         {/* Navigation below Hero Stats & HP Bar for Desktop (lg), original order for Mobile (using flex-col-reverse wrapper on mobile) */}
-        <div className="flex flex-col-reverse lg:flex-col w-full gap-4 mt-2 lg:mt-0">
-          <div className="w-full lg:flex lg:justify-center sticky top-4 z-[90]">
-            <nav className="flex bg-[#3e2723] p-1.5 border-4 border-black shadow-[6px_6px_0_0_#000] overflow-x-auto whitespace-nowrap scrollbar-hide lg:w-max backdrop-blur-md relative">
-              {[
-                { id: 'quest', label: t.navQuest || 'Quest' },
-                { id: 'oracle', label: t.navOracle || 'Oracle' },
-                { id: 'report', label: language === 'id' ? 'Guild Report' : 'Guild Report' },
-                { id: 'calendar', label: t.navCalendar || 'Calendar' },
-                { id: 'settings', label: t.navSettings || 'Settings' },
-                { id: 'guidebook', label: language === 'id' ? 'Panduan' : 'Guidebook' }
-              ].map((tab) => (
-                <motion.button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ y: 2 }}
-                  className={`relative px-4 py-2 flex-shrink-0 font-sans font-bold uppercase text-xs md:text-sm z-10 transition-colors ${activeTab === tab.id ? 'text-[#3e2723]' : 'text-[#f4e4bc] hover:text-white'}`}
-                >
-                  {activeTab === tab.id && (
-                    <motion.div
-                      layoutId="activeTabBadge"
-                      className="absolute inset-0 bg-[#ffcc00] border-2 border-black"
-                      style={{ zIndex: -1 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                    />
-                  )}
-                  {tab.label}
-                </motion.button>
-              ))}
-            </nav>
+        {!isNewAccount && (
+          <div className="flex flex-col-reverse lg:flex-col w-full gap-4 mt-2 lg:mt-0">
+            <div className="w-full lg:flex lg:justify-center sticky top-4 z-[90]">
+              <nav className="flex bg-[#3e2723] p-1.5 border-4 border-black shadow-[6px_6px_0_0_#000] overflow-x-auto whitespace-nowrap scrollbar-hide lg:w-max backdrop-blur-md relative">
+                {[
+                  { id: 'quest', label: t.navQuest || 'Quest' },
+                  { id: 'oracle', label: t.navOracle || 'Oracle' },
+                  { id: 'report', label: language === 'id' ? 'Guild Report' : 'Guild Report' },
+                  { id: 'calendar', label: t.navCalendar || 'Calendar' },
+                  { id: 'settings', label: t.navSettings || 'Settings' },
+                  { id: 'guidebook', label: language === 'id' ? 'Panduan' : 'Guidebook' }
+                ].map((tab) => (
+                  <motion.button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    whileHover={{ y: -2 }}
+                    whileTap={{ y: 2 }}
+                    className={`relative px-4 py-2 flex-shrink-0 font-sans font-bold uppercase text-xs md:text-sm z-10 transition-colors ${activeTab === tab.id ? 'text-[#3e2723]' : 'text-[#f4e4bc] hover:text-white'}`}
+                  >
+                    {activeTab === tab.id && (
+                      <motion.div
+                        layoutId="activeTabBadge"
+                        className="absolute inset-0 bg-[#ffcc00] border-2 border-black"
+                        style={{ zIndex: -1 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                      />
+                    )}
+                    {tab.label}
+                  </motion.button>
+                ))}
+              </nav>
+            </div>
           </div>
-        </div>
+        )}
       </header>
       
-      {activeTab === 'quest' && (
+      {isNewAccount ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-6 border-4 border-black bg-[#1a1a17] text-white shadow-[8px_8px_0_0_#000] text-center my-8 mx-auto w-full max-w-2xl">
+          {!showStarterInput ? (
+            <>
+              <h2 className="font-display text-3xl md:text-4xl mb-4 text-[#ffcc00] uppercase">Mulai Petualanganmu!</h2>
+              <p className="font-sans text-[#f4e4bc] mb-8 max-w-md leading-relaxed">
+                Sebelum memulai misi, tentukan terlebih dahulu target pengeluaran harian maksimalmu. Ini akan menjadi batas <strong className="text-red-500">HP-mu</strong> dalam bertahan hidup di dunia nyata!
+              </p>
+              <button 
+                onClick={() => setShowStarterInput(true)}
+                className="px-8 py-4 bg-[#ffcc00] border-4 border-black font-bold uppercase text-black text-xl hover:-translate-y-1 shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-none transition-all"
+              >
+                🗡️ Mulai!
+              </button>
+            </>
+          ) : (
+            <form onSubmit={handleStartAdventure} className="w-full max-w-sm flex flex-col gap-4 mx-auto animate-in fade-in slide-in-from-bottom-4">
+               <label htmlFor="starterTarget" className="font-sans font-bold text-[#f4e4bc] mb-1 uppercase tracking-widest text-sm text-left">Target Pengeluaran Harian (Max HP)</label>
+               <input 
+                 id="starterTarget"
+                 type="number"
+                 required
+                 inputMode="numeric"
+                 pattern="[0-9]*"
+                 value={starterTarget}
+                 onChange={e => setStarterTarget(e.target.value)}
+                 className="w-full bg-[#3e2723] border-4 border-black border-l-[#ffcc00] p-4 text-white font-sans text-xl outline-none focus:bg-black transition-colors shadow-[inset_4px_4px_0_rgba(0,0,0,0.5)]"
+                 placeholder="Contoh: 150000"
+                 autoFocus
+               />
+               <button 
+                type="submit"
+                className="w-full py-4 bg-[#ffcc00] border-4 border-black font-bold uppercase text-black text-lg hover:-translate-y-1 shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-none transition-all"
+               >
+                 Tetapkan HP
+               </button>
+            </form>
+          )}
+        </div>
+      ) : (
+        <>
+          {activeTab === 'quest' && (
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
           {/* Mobile Widget Carousel (visible only on mobile) */}
@@ -393,6 +457,8 @@ export default function Dashboard() {
         <Suspense fallback={<div className="p-8 text-center text-[#ffcc00] animate-pulse">Opening Guidebook...</div>}>
           <Guidebook />
         </Suspense>
+      )}
+      </>
       )}
 
       <footer className="mt-auto py-6 border-t-4 border-[#3d251e] flex flex-col sm:flex-row justify-between items-center gap-4">

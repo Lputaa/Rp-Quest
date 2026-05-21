@@ -49,9 +49,9 @@ service cloud.firestore {
 
     function isValidTransaction(data) {
       return data.keys().hasAll(['type', 'amount', 'category', 'rune', 'timestamp']) &&
-             data.type is string && data.type.size() > 0 && data.type.size() <= 15 && (data.type == 'Gain' || data.type == 'Expense' || data.type == 'PotionBuy' || data.type == 'PotionDrink') &&
-             data.amount is number && data.amount > 0 &&
-             data.category is string && data.category.size() > 0 && data.category.size() <= 64 &&
+             data.type is string && data.type.size() > 0 && data.type.size() <= 64 && (data.type == 'Gain' || data.type == 'Expense' || data.type == 'PotionBuy' || data.type == 'PotionDrink') &&
+             data.amount is number && data.amount >= 0 &&
+             data.category is string && data.category.size() > 0 && data.category.size() <= 128 &&
              data.rune is string && data.rune.size() > 0 && data.rune.size() <= 64 &&
              data.timestamp is timestamp &&
              (!('description' in data) || (data.description == null || data.description is string));
@@ -60,9 +60,9 @@ service cloud.firestore {
     function isValidScheduledEvent(data) {
       return data.keys().hasAll(['type', 'name', 'amount', 'category', 'rune', 'frequency', 'autoLog', 'nextDueDate']) &&
              data.type is string && (data.type == 'Toll' || data.type == 'Bounty') &&
-             data.name is string && data.name.size() > 0 && data.name.size() <= 64 &&
-             data.amount is number && data.amount > 0 &&
-             data.category is string && data.category.size() <= 64 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 128 &&
+             data.amount is number && data.amount >= 0 &&
+             data.category is string && data.category.size() <= 128 &&
              data.rune is string && data.rune.size() > 0 && data.rune.size() <= 64 &&
              data.frequency is string && (data.frequency == 'daily' || data.frequency == 'weekly' || data.frequency == 'monthly') &&
              data.autoLog is bool &&
@@ -82,7 +82,7 @@ service cloud.firestore {
         allow get: if isSignedIn() && request.auth.uid == userId && isValidId(transactionId);
         allow list: if isSignedIn() && request.auth.uid == userId;
         allow create: if isSignedIn() && request.auth.uid == userId && 
-                      isValidId(transactionId) && isValidTransaction(incoming()) && exists(/databases/$(database)/documents/users/$(userId));
+                      isValidId(transactionId) && isValidTransaction(incoming());
         allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(transactionId);
       }
       
@@ -90,7 +90,7 @@ service cloud.firestore {
         allow get: if isSignedIn() && request.auth.uid == userId && isValidId(eventId);
         allow list: if isSignedIn() && request.auth.uid == userId;
         allow create: if isSignedIn() && request.auth.uid == userId && 
-                      isValidId(eventId) && isValidScheduledEvent(incoming()) && exists(/databases/$(database)/documents/users/$(userId));
+                      isValidId(eventId) && isValidScheduledEvent(incoming());
         allow update: if isSignedIn() && request.auth.uid == userId && 
                       isValidId(eventId) && isValidScheduledEvent(incoming()) && (
                         incoming().diff(existing()).affectedKeys().hasOnly(['nextDueDate', 'lastLoggedAt'])

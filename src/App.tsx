@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useState, lazy, Suspense } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { auth, loginWithGoogle, logout } from './lib/firebase';
 import { useAppStore } from './store';
 import { doc, getDoc } from 'firebase/firestore';
@@ -18,6 +19,7 @@ const Dashboard = lazy(() => import('./components/Dashboard'));
 export default function App() {
   const { user, authLoading, setUser, setAuthLoading, language, setLanguage } = useAppStore();
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const t = translations[language];
 
   useEffect(() => {
@@ -83,7 +85,7 @@ export default function App() {
           {language === 'en' ? 'ID' : 'EN'}
         </button>
         <button 
-          onClick={logout} 
+          onClick={() => setShowLogoutModal(true)} 
           className="font-sans text-xs md:text-sm text-gray-400 hover:text-white underline decoration-dashed underline-offset-4"
         >
           {t.logout}
@@ -96,6 +98,51 @@ export default function App() {
           <Dashboard />
         )}
       </Suspense>
+
+      <AnimatePresence>
+        {showLogoutModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-[#2b1d12] border-4 border-[#ffcc00] p-6 md:p-8 max-w-sm w-full shadow-[8px_8px_0_0_#000] relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none transform translate-x-4 -translate-y-4">
+                <span className="text-8xl">🚪</span>
+              </div>
+              <h3 className="font-display text-2xl text-[#ffcc00] uppercase mb-2 border-b-2 border-dashed border-[#5d4037] pb-2 relative z-10">
+                {t.logoutTitle}
+              </h3>
+              <p className="font-sans text-[#f4e4bc] text-sm mb-8 mt-4 relative z-10">
+                {t.logoutDesc}
+              </p>
+              <div className="flex gap-4 relative z-10">
+                <button 
+                  onClick={() => setShowLogoutModal(false)}
+                  className="flex-1 bg-[#1a1a17] text-white border-2 border-gray-600 hover:border-gray-400 font-sans font-bold uppercase text-xs py-3 shadow-[2px_2px_0_0_#000] active:translate-y-1 active:shadow-none transition-all"
+                >
+                  {t.cancel}
+                </button>
+                <button 
+                  onClick={() => {
+                    setShowLogoutModal(false);
+                    logout();
+                  }}
+                  className="flex-1 bg-[#ef5350] text-white border-2 border-black hover:bg-red-600 font-sans font-bold uppercase text-xs py-3 shadow-[2px_2px_0_0_#000] active:translate-y-1 active:shadow-none transition-all"
+                >
+                  {t.logoutConfirm}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

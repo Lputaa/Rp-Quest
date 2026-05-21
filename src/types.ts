@@ -61,7 +61,8 @@ export const RUNES = [
   { id: '🛍️ ShopeePay', name: 'ShopeePay', icon: '🛍️' },
   { id: '💙 DANA', name: 'DANA', icon: '💙' },
   { id: '🌊 SeaBank', name: 'SeaBank', icon: '🌊' },
-  { id: '🏦 Other Bank', name: 'Other Bank', icon: '🏦' }
+  { id: '🏦 Other Bank', name: 'Other Bank', icon: '🏦' },
+  { id: '🖤 Curse', name: 'Curse (Hutang)', icon: '🖤' }
 ];
 
 export interface ScheduledEvent {

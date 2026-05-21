@@ -1,0 +1,878 @@
+{
+  "exportDate": "2026-05-21T00:00:00.000Z",
+  "transactions": [
+    {
+      "type": "Expense",
+      "amount": 41403,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 15604,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "type": "Gain",
+      "amount": 166961,
+      "category": "📜 Quest Reward",
+      "rune": "💙 DANA",
+      "timestamp": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 39470,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-21T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 42716,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-22T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 22299,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-23T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 44766,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-24T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 33357,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-25T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 12202,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-25T00:00:00.000Z"
+    },
+    {
+      "type": "Gain",
+      "amount": 5000000,
+      "category": "🏰 Royal Salary",
+      "rune": "🏦 Other Bank",
+      "timestamp": "2026-03-25T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 41285,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-26T00:00:00.000Z"
+    },
+    {
+      "type": "Gain",
+      "amount": 195128,
+      "category": "📜 Quest Reward",
+      "rune": "💙 DANA",
+      "timestamp": "2026-03-26T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 18871,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-27T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 19303,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-27T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 31925,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-28T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 15630,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-28T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 34219,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-29T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 17828,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-29T00:00:00.000Z"
+    },
+    {
+      "type": "Gain",
+      "amount": 114598,
+      "category": "📜 Quest Reward",
+      "rune": "💙 DANA",
+      "timestamp": "2026-03-29T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 43770,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-30T00:00:00.000Z"
+    },
+    {
+      "type": "PotionBuy",
+      "amount": 10,
+      "category": "🧪 Potion Vendor",
+      "rune": "🪙 Gold",
+      "timestamp": "2026-03-30T00:00:00.000Z"
+    },
+    {
+      "type": "PotionDrink",
+      "amount": 1,
+      "category": "🧪 Combat Healing",
+      "rune": "🪙 Gold",
+      "timestamp": "2026-03-30T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 41851,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-31T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 20451,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-03-31T00:00:00.000Z"
+    },
+    {
+      "type": "PotionDrink",
+      "amount": 2,
+      "category": "🧪 Combat Healing",
+      "rune": "🪙 Gold",
+      "timestamp": "2026-03-31T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 15256,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-01T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 15916,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-01T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 16339,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-02T00:00:00.000Z"
+    },
+    {
+      "type": "Gain",
+      "amount": 185031,
+      "category": "📜 Quest Reward",
+      "rune": "💙 DANA",
+      "timestamp": "2026-04-02T00:00:00.000Z"
+    },
+    {
+      "type": "PotionDrink",
+      "amount": 2,
+      "category": "🧪 Combat Healing",
+      "rune": "🪙 Gold",
+      "timestamp": "2026-04-02T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 32844,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-03T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 11596,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-03T00:00:00.000Z"
+    },
+    {
+      "type": "Gain",
+      "amount": 122687,
+      "category": "📜 Quest Reward",
+      "rune": "💙 DANA",
+      "timestamp": "2026-04-03T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 39272,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-04T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 10730,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-04T00:00:00.000Z"
+    },
+    {
+      "type": "Gain",
+      "amount": 242316,
+      "category": "📜 Quest Reward",
+      "rune": "💙 DANA",
+      "timestamp": "2026-04-04T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 34333,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-05T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 350000,
+      "category": "🔮 Magic Orb Maintenance",
+      "rune": "🏦 Other Bank",
+      "timestamp": "2026-04-05T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 42635,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-06T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 19085,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-06T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 42419,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-07T00:00:00.000Z"
+    },
+    {
+      "type": "PotionDrink",
+      "amount": 2,
+      "category": "🧪 Combat Healing",
+      "rune": "🪙 Gold",
+      "timestamp": "2026-04-07T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 37512,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-08T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 22531,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-08T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 35156,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-09T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 16557,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-09T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 26678,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-10T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 17205,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-10T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 40570,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-11T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 22105,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-11T00:00:00.000Z"
+    },
+    {
+      "type": "PotionDrink",
+      "amount": 2,
+      "category": "🧪 Combat Healing",
+      "rune": "🪙 Gold",
+      "timestamp": "2026-04-11T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 44628,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-12T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 34116,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-13T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 20215,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-13T00:00:00.000Z"
+    },
+    {
+      "type": "PotionBuy",
+      "amount": 10,
+      "category": "🧪 Potion Vendor",
+      "rune": "🪙 Gold",
+      "timestamp": "2026-04-13T00:00:00.000Z"
+    },
+    {
+      "type": "PotionDrink",
+      "amount": 2,
+      "category": "🧪 Combat Healing",
+      "rune": "🪙 Gold",
+      "timestamp": "2026-04-13T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 24197,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-14T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 23208,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-14T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 33151,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-15T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 34936,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-16T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 12768,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-16T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 27464,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-17T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 24348,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-17T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 24140,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-18T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 44409,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-19T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 37385,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-20T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 20393,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-20T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 39936,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-21T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 21367,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-22T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 16155,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-23T00:00:00.000Z"
+    },
+    {
+      "type": "PotionDrink",
+      "amount": 1,
+      "category": "🧪 Combat Healing",
+      "rune": "🪙 Gold",
+      "timestamp": "2026-04-23T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 28869,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-24T00:00:00.000Z"
+    },
+    {
+      "type": "PotionDrink",
+      "amount": 1,
+      "category": "🧪 Combat Healing",
+      "rune": "🪙 Gold",
+      "timestamp": "2026-04-24T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 16216,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-25T00:00:00.000Z"
+    },
+    {
+      "type": "Gain",
+      "amount": 5000000,
+      "category": "🏰 Royal Salary",
+      "rune": "🏦 Other Bank",
+      "timestamp": "2026-04-25T00:00:00.000Z"
+    },
+    {
+      "type": "PotionDrink",
+      "amount": 1,
+      "category": "🧪 Combat Healing",
+      "rune": "🪙 Gold",
+      "timestamp": "2026-04-25T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 43446,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-26T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 34506,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-27T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 24791,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-27T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 23489,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-28T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 22906,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-29T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 43315,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-30T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 14320,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-04-30T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 44797,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-01T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 16143,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-01T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 21764,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-02T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 23420,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-02T00:00:00.000Z"
+    },
+    {
+      "type": "Gain",
+      "amount": 180109,
+      "category": "📜 Quest Reward",
+      "rune": "💙 DANA",
+      "timestamp": "2026-05-02T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 25975,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-03T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 42222,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-04T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 13677,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-04T00:00:00.000Z"
+    },
+    {
+      "type": "PotionDrink",
+      "amount": 2,
+      "category": "🧪 Combat Healing",
+      "rune": "🪙 Gold",
+      "timestamp": "2026-05-04T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 31006,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-05T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 12774,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-05T00:00:00.000Z"
+    },
+    {
+      "type": "Gain",
+      "amount": 140744,
+      "category": "📜 Quest Reward",
+      "rune": "💙 DANA",
+      "timestamp": "2026-05-05T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 350000,
+      "category": "🔮 Magic Orb Maintenance",
+      "rune": "🏦 Other Bank",
+      "timestamp": "2026-05-05T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 27701,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-06T00:00:00.000Z"
+    },
+    {
+      "type": "PotionDrink",
+      "amount": 1,
+      "category": "🧪 Combat Healing",
+      "rune": "🪙 Gold",
+      "timestamp": "2026-05-06T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 33902,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-07T00:00:00.000Z"
+    },
+    {
+      "type": "PotionDrink",
+      "amount": 2,
+      "category": "🧪 Combat Healing",
+      "rune": "🪙 Gold",
+      "timestamp": "2026-05-07T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 38154,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-08T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 27309,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-09T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 17170,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-09T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 36402,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-10T00:00:00.000Z"
+    },
+    {
+      "type": "PotionDrink",
+      "amount": 1,
+      "category": "🧪 Combat Healing",
+      "rune": "🪙 Gold",
+      "timestamp": "2026-05-10T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 25703,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-11T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 18099,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-12T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 13058,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-12T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 43447,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-13T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 22596,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-13T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 27575,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-14T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 22206,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-15T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 10461,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-15T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 42767,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-16T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 41617,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-17T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 44298,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-18T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 21489,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-18T00:00:00.000Z"
+    },
+    {
+      "type": "Gain",
+      "amount": 135995,
+      "category": "📜 Quest Reward",
+      "rune": "💙 DANA",
+      "timestamp": "2026-05-18T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 25238,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-19T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 14112,
+      "category": "🐴 Stable & Carriage",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-19T00:00:00.000Z"
+    },
+    {
+      "type": "Expense",
+      "amount": 38509,
+      "category": "🍖 Tavern Feast",
+      "rune": "🛍️ ShopeePay",
+      "timestamp": "2026-05-20T00:00:00.000Z"
+    }
+  ],
+  "scheduledEvents": [
+    {
+      "type": "Bounty",
+      "name": "🏰 Royal Salary",
+      "amount": 5000000,
+      "frequency": "monthly",
+      "frequencyValue": 25,
+      "rune": "🏦 Other Bank",
+      "category": "🏰 Royal Salary",
+      "autoLog": true,
+      "nextDueDate": "2026-05-25T00:00:00.000Z",
+      "createdAt": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "type": "Toll",
+      "name": "🔮 Magic Orb Maintenance",
+      "amount": 350000,
+      "frequency": "monthly",
+      "frequencyValue": 5,
+      "rune": "🏦 Other Bank",
+      "category": "🔮 Magic Orb Maintenance",
+      "autoLog": true,
+      "nextDueDate": "2026-06-05T00:00:00.000Z",
+      "createdAt": "2026-03-20T00:00:00.000Z"
+    }
+  ]
+}

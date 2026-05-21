@@ -51,7 +51,7 @@ export default function HeroStats({ transactions, profile }: { transactions: Tra
     });
 
     const incomeBase = profile.monthlyIncome + monthGain;
-    const maxHP = profile.customHPCap || profile.targetDailyExpense || Math.max(0, (profile.monthlyIncome - (profile.targetSavings || 0)) / 30);
+    const maxHP = profile.customHPCap || 100000;
     
     let title = '🌱 ' + t.peasant;
 
@@ -90,7 +90,7 @@ export default function HeroStats({ transactions, profile }: { transactions: Tra
       title = '💀 ' + t.ghostWallet;
     }
 
-    return { monthGain, monthExpense, title, charName: profile.characterName || 'Traveler', avatar: profile.avatar || '🧑‍🌾' };
+    return { monthGain, monthExpense, title, charName: profile.characterName || 'Traveler', avatar: profile.avatar || '🧑‍🌾', totalNetWorth };
   }, [transactions, profile, t]);
 
   const getLevelStyle = (title: string) => {
@@ -121,35 +121,22 @@ export default function HeroStats({ transactions, profile }: { transactions: Tra
         </button>
       </div>
       <div className="flex flex-col gap-2 md:gap-4 flex-wrap">
-        <div className="flex items-center gap-2 md:gap-4 flex-wrap">
-          <span className={`font-sans px-3 py-1 border-2 text-xs uppercase flex items-center gap-2 font-bold transition-all ${getLevelStyle(stats.title)}`} style={{fontFamily: 'monospace'}}>
-            <span className="text-base leading-none">{stats.title.split(' ')[0]}</span>
-            <span>Lv. {Math.floor(stats.monthGain / 1000000) + 1} {stats.title.substring(stats.title.indexOf(' ') + 1)}</span>
-          </span>
-          <div className="flex gap-2">
-            <motion.div 
-              key={`exp-${stats.monthExpense}`} 
-              initial={{ scale: 1.2, backgroundColor: 'rgba(239,83,80,0.5)', color: '#fff' }} 
-              animate={{ scale: 1, backgroundColor: 'rgba(26,26,23,1)', color: '#ef5350' }} 
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="font-sans text-[#ef5350] text-xs uppercase tracking-widest px-2 py-1 border border-[#ef5350]/30 shadow-[2px_2px_0_0_rgba(239,83,80,0.3)] flex items-center gap-1"
-            >
-              <span className="text-[10px] animate-pulse">▼</span> {t.tollBtn}: {stats.monthExpense.toLocaleString('id-ID')}
-            </motion.div>
-            <motion.div 
-              key={`gain-${stats.monthGain}`} 
-              initial={{ scale: 1.2, backgroundColor: 'rgba(102,187,106,0.5)', color: '#fff' }} 
-              animate={{ scale: 1, backgroundColor: 'rgba(26,26,23,1)', color: '#aed581' }} 
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="font-sans text-[#aed581] text-xs uppercase tracking-widest px-2 py-1 border border-[#aed581]/30 shadow-[2px_2px_0_0_rgba(174,213,129,0.3)] flex items-center gap-1"
-            >
-              <span className="text-[10px] animate-pulse">▲</span> {t.bountyBtn}: {stats.monthGain.toLocaleString('id-ID')}
-            </motion.div>
+        <div className="flex items-stretch gap-2 md:gap-3 flex-wrap">
+          <div className="bg-gradient-to-b from-[#2b1d12] to-[#1a1a17] border-2 border-amber-600/50 px-4 py-1.5 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.1),2px_2px_0_0_rgba(217,119,6,0.3)] relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-amber-400/50 to-transparent"></div>
+            <span className="font-display text-[11px] md:text-sm uppercase text-amber-500 tracking-[0.2em] font-black drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] z-10">
+              LVL <span className="text-amber-400 text-sm md:text-base">{Math.floor(stats.monthGain / 1000000) + 1}</span>
+            </span>
+          </div>
+          <div className={`font-sans px-4 py-1.5 border-2 text-[11px] md:text-sm uppercase flex items-center gap-2 font-black transition-all relative overflow-hidden ${getLevelStyle(stats.title)}`}>
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-white/20"></div>
+            <span className="text-lg leading-none drop-shadow-md z-10 scale-110">{stats.title.split(' ')[0]}</span>
+            <span className="tracking-[0.15em] z-10 drop-shadow-md">{stats.title.substring(stats.title.indexOf(' ') + 1)}</span>
           </div>
         </div>
 
         {/* EXP Bar */}
-        <div className="w-full max-w-sm flex flex-col gap-1">
+        <div className="w-full max-w-sm flex flex-col gap-1 mt-1">
           <div className="flex justify-between text-[10px] uppercase font-bold text-amber-600 tracking-widest font-sans">
             <span>EXP</span>
             <span>{Math.max(0, stats.monthGain % 1000000).toLocaleString('id-ID')} / 1.000.000</span>
@@ -161,6 +148,40 @@ export default function HeroStats({ transactions, profile }: { transactions: Tra
               animate={{ width: `${Math.max(0, Math.min(100, (stats.monthGain % 1000000) / 1000000 * 100))}%` }}
               transition={{ type: 'spring', stiffness: 100, damping: 20 }}
             />
+          </div>
+        </div>
+
+        {/* Total Net Worth */}
+        <div className="w-full max-w-sm flex flex-col mt-2 p-3 pb-4 bg-gradient-to-r from-[#2b1d12] to-[#1a1a17] border-2 border-[#5d4037] shadow-[2px_2px_0_0_#000] relative overflow-hidden group hover:border-[#ffcc00] transition-colors">
+          <div className="absolute top-0 right-0 p-2 opacity-10 font-black text-6xl pointer-events-none transform translate-x-4 -translate-y-4 text-[#ffcc00]">✦</div>
+          <span className="font-display text-[10px] uppercase tracking-[0.2em] text-[#f4e4bc] mb-1 opacity-80 z-10">
+            {language === 'id' ? 'Total Kekayaan Bersih' : 'Total Net Worth'}
+          </span>
+          <span className={`font-sans text-2xl md:text-3xl font-black drop-shadow-[2px_2px_0_rgba(0,0,0,1)] tracking-tight z-10 flex items-center mb-3 ${stats.totalNetWorth < 0 ? 'text-[#ef5350]' : 'text-[#ffcc00]'}`}>
+            {stats.totalNetWorth < 0 ? '-' : ''} <span className="text-sm mr-1 opacity-70">Rp</span> {Math.abs(stats.totalNetWorth).toLocaleString('id-ID')}
+          </span>
+          
+          <div className="flex gap-2 mt-auto z-10 border-t border-[#5d4037] pt-3">
+            <motion.div 
+              key={`gain-${stats.monthGain}`} 
+              initial={{ scale: 1.2, backgroundColor: 'rgba(102,187,106,0.5)', color: '#fff' }} 
+              animate={{ scale: 1, backgroundColor: 'rgba(26,26,23,1)', color: '#aed581' }} 
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              className="flex-1 font-sans text-[#aed581] text-[10px] uppercase tracking-widest px-2 py-1.5 border border-[#aed581]/30 shadow-[2px_2px_0_0_rgba(174,213,129,0.3)] flex flex-col justify-center"
+            >
+              <div className="flex items-center gap-1 opacity-80 mb-0.5"><span className="text-[8px] animate-pulse">▲</span> {t.bountyBtn}</div>
+              <div className="font-bold text-xs">{stats.monthGain.toLocaleString('id-ID')}</div>
+            </motion.div>
+            <motion.div 
+              key={`exp-${stats.monthExpense}`} 
+              initial={{ scale: 1.2, backgroundColor: 'rgba(239,83,80,0.5)', color: '#fff' }} 
+              animate={{ scale: 1, backgroundColor: 'rgba(26,26,23,1)', color: '#ef5350' }} 
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              className="flex-1 font-sans text-[#ef5350] text-[10px] uppercase tracking-widest px-2 py-1.5 border border-[#ef5350]/30 shadow-[2px_2px_0_0_rgba(239,83,80,0.3)] flex flex-col justify-center"
+            >
+              <div className="flex items-center gap-1 opacity-80 mb-0.5"><span className="text-[8px] animate-pulse">▼</span> {t.tollBtn}</div>
+              <div className="font-bold text-xs">{stats.monthExpense.toLocaleString('id-ID')}</div>
+            </motion.div>
           </div>
         </div>
       </div>

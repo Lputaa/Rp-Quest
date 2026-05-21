@@ -3,16 +3,17 @@ import { Transaction, UserProfile, EXPENSE_CATEGORIES, GAIN_CATEGORIES } from '.
 import { useAppStore } from '../store';
 import { translations } from '../lib/i18n';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { format, subDays, isSameDay, startOfMonth, isSameMonth, eachDayOfInterval } from 'date-fns';
+import { format, subDays, isSameDay, startOfMonth, isSameMonth, eachDayOfInterval, addMonths, endOfMonth } from 'date-fns';
 
 export default function OracleScroll({ transactions, maxHP }: { transactions: Transaction[], maxHP: number }) {
   const language = useAppStore(state => state.language);
   const t = translations[language];
 
-  const [period, setPeriod] = useState<'week' | 'month'>('week');
+  const [period, setPeriod] = useState<'week' | 'month' | '3months'>('week');
   const [mode, setMode] = useState<'overview' | 'drilldown'>('overview');
   const [activeDrillTab, setActiveDrillTab] = useState<'toll' | 'bounty'>('toll');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [monthOffset, setMonthOffset] = useState(0);
   
   const today = new Date();
 
@@ -33,9 +34,13 @@ export default function OracleScroll({ transactions, maxHP }: { transactions: Tr
     let dataPoints: Date[] = [];
     if (period === 'week') {
       dataPoints = eachDayOfInterval({ start: subDays(today, 6), end: today });
+    } else if (period === 'month') {
+      const targetDate = addMonths(today, monthOffset);
+      const monthStart = startOfMonth(targetDate);
+      const monthEnd = monthOffset === 0 ? today : endOfMonth(targetDate);
+      dataPoints = eachDayOfInterval({ start: monthStart, end: monthEnd });
     } else {
-      const monthStart = startOfMonth(today);
-      dataPoints = eachDayOfInterval({ start: monthStart, end: today });
+      dataPoints = eachDayOfInterval({ start: subDays(today, 90), end: today });
     }
 
     return dataPoints.map(date => {
@@ -63,13 +68,19 @@ export default function OracleScroll({ transactions, maxHP }: { transactions: Tr
       }
       return point;
     });
-  }, [transactions, period, mode, selectedCategories, maxHP, today, activeDrillTab]);
+  }, [transactions, period, mode, selectedCategories, maxHP, today, activeDrillTab, monthOffset]);
 
   const pieDataToll = useMemo(() => {
     const relevantTxs = transactions.filter(tx => {
       if (!tx.timestamp || tx.type !== 'Expense') return false;
       const txDate = tx.timestamp.toDate();
-      return period === 'week' ? txDate >= subDays(today, 6) : isSameMonth(txDate, today);
+      if (period === 'week') return txDate >= subDays(today, 6);
+      if (period === 'month') {
+        const targetDate = addMonths(today, monthOffset);
+        if (monthOffset === 0) return isSameMonth(txDate, today) && txDate <= today;
+        return isSameMonth(txDate, targetDate);
+      }
+      return txDate >= subDays(today, 90);
     });
     
     const acc: Record<string, number> = {};
@@ -78,13 +89,19 @@ export default function OracleScroll({ transactions, maxHP }: { transactions: Tr
     });
     
     return Object.entries(acc).map(([name, value], idx) => ({ name, value, fill: name === 'Ghost Toll' || name === 'Shadow Toll' ? '#ef5350' : COLORS[idx % COLORS.length] })).sort((a,b) => b.value - a.value);
-  }, [transactions, period]);
+  }, [transactions, period, today, monthOffset]);
 
   const pieDataBounty = useMemo(() => {
     const relevantTxs = transactions.filter(tx => {
       if (!tx.timestamp || tx.type !== 'Gain') return false;
       const txDate = tx.timestamp.toDate();
-      return period === 'week' ? txDate >= subDays(today, 6) : isSameMonth(txDate, today);
+      if (period === 'week') return txDate >= subDays(today, 6);
+      if (period === 'month') {
+        const targetDate = addMonths(today, monthOffset);
+        if (monthOffset === 0) return isSameMonth(txDate, today) && txDate <= today;
+        return isSameMonth(txDate, targetDate);
+      }
+      return txDate >= subDays(today, 90);
     });
     
     const acc: Record<string, number> = {};
@@ -93,7 +110,7 @@ export default function OracleScroll({ transactions, maxHP }: { transactions: Tr
     });
     
     return Object.entries(acc).map(([name, value], idx) => ({ name, value, fill: name === 'Royal Salary' || name === 'Yield' ? '#ffca28' : COLORS[idx % COLORS.length] })).sort((a,b) => b.value - a.value);
-  }, [transactions, period]);
+  }, [transactions, period, today, monthOffset]);
 
   const tollTotal = pieDataToll.reduce((acc, curr) => acc + curr.value, 0);
   const bountyTotal = pieDataBounty.reduce((acc, curr) => acc + curr.value, 0);
@@ -105,9 +122,21 @@ export default function OracleScroll({ transactions, maxHP }: { transactions: Tr
           <h2 className="font-display text-2xl text-[#ffcc00] uppercase">{t.oracleTitle}</h2>
           <p className="font-sans text-xs md:text-sm text-[#f4e4bc] italic">{t.oracleDesc}</p>
         </div>
-        <div className="flex gap-2 w-full md:w-auto">
-          <button onClick={() => setPeriod('week')} className={`flex-1 md:flex-none px-2 py-2 md:py-1 text-xs font-bold uppercase border-2 ${period === 'week' ? 'bg-[#ffcc00] border-black text-black' : 'border-[#5d4037] text-gray-400'}`}>{t.weeklyView}</button>
-          <button onClick={() => setPeriod('month')} className={`flex-1 md:flex-none px-2 py-2 md:py-1 text-xs font-bold uppercase border-2 ${period === 'month' ? 'bg-[#ffcc00] border-black text-black' : 'border-[#5d4037] text-gray-400'}`}>{t.monthlyView}</button>
+        <div className="flex flex-col gap-2 w-full md:w-auto items-end">
+          <div className="flex flex-wrap gap-2 w-full md:w-auto">
+            <button onClick={() => { setPeriod('week'); setMonthOffset(0); }} className={`flex-1 md:flex-none px-2 py-2 md:py-1 text-xs font-bold uppercase border-2 ${period === 'week' ? 'bg-[#ffcc00] border-black text-black' : 'border-[#5d4037] text-gray-400'}`}>{t.weeklyView}</button>
+            <button onClick={() => setPeriod('month')} className={`flex-1 md:flex-none px-2 py-2 md:py-1 text-xs font-bold uppercase border-2 ${period === 'month' ? 'bg-[#ffcc00] border-black text-black' : 'border-[#5d4037] text-gray-400'}`}>{t.monthlyView}</button>
+            <button onClick={() => { setPeriod('3months'); setMonthOffset(0); }} className={`flex-1 md:flex-none px-2 py-2 md:py-1 text-xs font-bold uppercase border-2 ${period === '3months' ? 'bg-[#ffcc00] border-black text-black' : 'border-[#5d4037] text-gray-400'}`}>3 Months</button>
+          </div>
+          {period === 'month' && (
+            <div className="flex justify-between items-center bg-[#1a1a17] border border-[#5d4037] w-full md:max-w-[200px]">
+              <button disabled={monthOffset <= -12} onClick={() => setMonthOffset(m => m - 1)} className="text-[#ffcc00] font-bold px-3 py-1 text-lg disabled:opacity-50 hover:bg-[#3e2723]">{"<"}</button>
+              <span className="text-xs font-bold font-sans text-white uppercase text-center flex-1">
+                {format(addMonths(today, monthOffset), 'MMM yyyy')}
+              </span>
+              <button disabled={monthOffset >= 0} onClick={() => setMonthOffset(m => m + 1)} className="text-[#ffcc00] font-bold px-3 py-1 text-lg disabled:opacity-50 hover:bg-[#3e2723]">{">"}</button>
+            </div>
+          )}
         </div>
       </div>
 

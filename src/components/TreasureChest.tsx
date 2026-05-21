@@ -138,17 +138,20 @@ export default function TreasureChest({ transactions }: { transactions: Transact
         </div>
 
         {/* Runes */}
-        {RUNES.map(r => (
+        {RUNES.map(r => {
+          const bal = balances[r.id] || 0;
+          return (
           <div key={r.id} className="bg-[#1a1a17] border-2 border-[#3d251e] p-3 flex justify-between items-center hover:border-[#ffcc00] transition-colors">
             <div className="flex items-center gap-2">
               <span className="text-xl drop-shadow-md">{r.icon}</span>
               <span className="font-sans text-xs md:text-sm uppercase text-[#f4e4bc] tracking-wider">{r.name}</span>
             </div>
-            <span className="font-sans text-sm md:text-base font-bold text-[#aed581]">
-              Rp {(balances[r.id] || 0).toLocaleString('id-ID')}
+            <span className={`font-sans text-sm md:text-base font-bold ${bal < 0 ? 'text-[#ef5350]' : 'text-[#aed581]'}`}>
+              {bal < 0 ? '-' : ''}Rp {Math.abs(bal).toLocaleString('id-ID')}
             </span>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

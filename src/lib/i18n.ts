@@ -86,7 +86,11 @@ export const translations = {
     avatar: "Avatar",
     customHp: "Daily HP Override (Starts Tomorrow)",
     saveBtn: "Save Profile",
-    saveSuccess: "Profile saved successfully."
+    saveSuccess: "Profile saved successfully.",
+    logoutConfirm: "Yes, Leave",
+    logoutTitle: "Leaving the Realm?",
+    logoutDesc: "Are you sure you want to end your session today? Your progress is safely recorded in the guild archives.",
+    cancel: "Cancel"
   },
   id: {
     loading: "MEMUAT DATA SIMPANAN...",
@@ -175,6 +179,10 @@ export const translations = {
     avatar: "Avatar",
     customHp: "Batas HP Harian (Berlaku Besok)",
     saveBtn: "Simpan Profil",
-    saveSuccess: "Profil berhasil disimpan."
+    saveSuccess: "Profil berhasil disimpan.",
+    logoutConfirm: "Ya, Keluar",
+    logoutTitle: "Meninggalkan Alam Ini?",
+    logoutDesc: "Apakah kamu yakin ingin mengakhiri sesimu hari ini? Progres perjalananmu telah tersimpan aman di arsip guild.",
+    cancel: "Batal"
   }
 };
