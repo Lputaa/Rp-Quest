@@ -1,12 +1,11 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ScheduledEvent, EXPENSE_CATEGORIES, RUNES } from '../types';
 import { translations } from '../lib/i18n';
 import { useAppStore } from '../store';
-import { collection, addDoc, deleteDoc, doc, Timestamp, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, Timestamp } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isSameMonth, startOfWeek, endOfWeek, addDays, getDay, setDate, addWeeks } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isSameMonth, startOfWeek, endOfWeek, addDays, getDay, setDate } from 'date-fns';
 import { ChevronLeft, ChevronRight, Plus, Trash2, Calendar, List } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
 
 interface RoyalCalendarProps {
   scheduledEvents: ScheduledEvent[];
@@ -14,7 +13,6 @@ interface RoyalCalendarProps {
 
 export default function RoyalCalendar({ scheduledEvents }: RoyalCalendarProps) {
   const language = useAppStore(state => state.language);
-  const t = translations[language];
   const [view, setView] = useState<'month' | 'list'>('month');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showForm, setShowForm] = useState(false);
@@ -105,6 +103,67 @@ export default function RoyalCalendar({ scheduledEvents }: RoyalCalendarProps) {
     setFormAutoLog(true);
   }
 
+  const renderForm = () => (
+    <div className="bg-[#1a1a17] text-white p-4 border-4 border-black mb-6 shadow-[4px_4px_0_0_#000] animate-in fade-in slide-in-from-top-2">
+      <h3 className="font-display text-xl uppercase mb-4 text-[#ffcc00] border-b-2 border-[#5d4037] pb-2">Create Scheduled Mission</h3>
+      <form onSubmit={handleCreate} className="space-y-4 font-sans">
+        <div className="flex gap-2">
+           <button type="button" onClick={() => setFormType('Toll')} className={`flex-1 py-2 font-bold uppercase border-2 ${formType === 'Toll' ? 'bg-red-600 border-red-800' : 'bg-transparent border-gray-600 text-gray-400'}`}>Toll</button>
+           <button type="button" onClick={() => setFormType('Bounty')} className={`flex-1 py-2 font-bold uppercase border-2 ${formType === 'Bounty' ? 'bg-green-600 border-green-800' : 'bg-transparent border-gray-600 text-gray-400'}`}>Bounty</button>
+        </div>
+        <div>
+           <label htmlFor="formName" className="block text-xs uppercase mb-1 text-gray-400">Name</label>
+           <input id="formName" required type="text" value={formName} onChange={e => setFormName(e.target.value)} className="w-full bg-[#3e2723] border-2 border-black p-2 text-white outline-none focus:border-[#ffcc00]" placeholder="e.g. Castle Upkeep" />
+        </div>
+        <div>
+           <label htmlFor="formAmount" className="block text-xs uppercase mb-1 text-gray-400">Amount</label>
+           <input id="formAmount" required type="number" inputMode="numeric" pattern="[0-9]*" value={formAmount} onChange={e => setFormAmount(e.target.value)} className="w-full bg-[#3e2723] border-2 border-black p-2 text-white outline-none focus:border-[#ffcc00]" />
+        </div>
+        {formType === 'Toll' && (
+          <div>
+             <label htmlFor="formCategory" className="block text-xs uppercase mb-1 text-gray-400">Category</label>
+             <select id="formCategory" required value={formCategory} onChange={e => setFormCategory(e.target.value)} className="w-full bg-[#3e2723] border-2 border-black p-2 text-white outline-none focus:border-[#ffcc00]">
+                <option value="" disabled>Select category...</option>
+                {EXPENSE_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
+             </select>
+          </div>
+        )}
+        <div>
+           <label htmlFor="formRune" className="block text-xs uppercase mb-1 text-gray-400">{formType === 'Toll' ? 'Source Rune' : 'Target Rune'}</label>
+           <select id="formRune" required value={formRune} onChange={e => setFormRune(e.target.value)} className="w-full bg-[#3e2723] border-2 border-black p-2 text-white outline-none focus:border-[#ffcc00]">
+              <option value="" disabled>Select rune...</option>
+              {formType === 'Bounty' && <option value="potion">🧪 Potion Stash</option>}
+              {RUNES.map(r => <option key={r.id} value={r.id}>{r.icon} {r.name}</option>)}
+           </select>
+        </div>
+        <div className="flex gap-4">
+           <div className="flex-1">
+             <label htmlFor="formFreq" className="block text-xs uppercase mb-1 text-gray-400">Frequency</label>
+             <select id="formFreq" value={formFreq} onChange={e => setFormFreq(e.target.value as any)} className="w-full bg-[#3e2723] border-2 border-black p-2 text-white outline-none focus:border-[#ffcc00]">
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+             </select>
+           </div>
+           {formFreq !== 'daily' && (
+             <div className="flex-1">
+               <label htmlFor="formFreqVal" className="block text-xs uppercase mb-1 text-gray-400">{formFreq === 'weekly' ? 'Day of Week (1-7)' : 'Date of Month (1-31)'}</label>
+               <input id="formFreqVal" required type="number" inputMode="numeric" pattern="[0-9]*" min="1" max={formFreq === 'weekly' ? 7 : 31} value={formFreqVal} onChange={e => setFormFreqVal(Number(e.target.value))} className="w-full bg-[#3e2723] border-2 border-black p-2 text-white outline-none focus:border-[#ffcc00]" />
+             </div>
+           )}
+        </div>
+        <div className="flex items-center gap-2 mt-2">
+           <input type="checkbox" id="autolog" checked={formAutoLog} onChange={e => setFormAutoLog(e.target.checked)} className="w-4 h-4 cursor-pointer accentuate-[#ffcc00]" />
+           <label htmlFor="autolog" className="text-sm uppercase cursor-pointer">Auto-Log (Consume HP automatically)</label>
+        </div>
+        <div className="flex justify-end gap-2 pt-4 border-t-2 border-[#5d4037]">
+           <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border-2 border-gray-500 text-gray-400 uppercase font-bold hover:bg-white/10">Cancel</button>
+           <button type="submit" className="px-6 py-2 border-2 border-black bg-[#ffcc00] text-black uppercase font-bold shadow-[2px_2px_0_0_#000] hover:translate-y-px hover:shadow-[1px_1px_0_0_#000]">Create</button>
+        </div>
+      </form>
+    </div>
+  );
+
   return (
     <div className="bg-[#f4e4bc] border-4 border-black p-4 md:p-6 shadow-[8px_8px_0_0_#000] text-[#3e2723]">
       <div className="flex justify-between items-center mb-6">
@@ -115,69 +174,15 @@ export default function RoyalCalendar({ scheduledEvents }: RoyalCalendarProps) {
         </div>
       </div>
       
-      {showForm ? (
-        <div className="bg-[#1a1a17] text-white p-4 border-4 border-black mb-6 shadow-[4px_4px_0_0_#000]">
-          <h3 className="font-display text-xl uppercase mb-4 text-[#ffcc00] border-b-2 border-[#5d4037] pb-2">Create Scheduled Mission</h3>
-          <form onSubmit={handleCreate} className="space-y-4 font-sans">
-            <div className="flex gap-2">
-               <button type="button" onClick={() => setFormType('Toll')} className={`flex-1 py-2 font-bold uppercase border-2 ${formType === 'Toll' ? 'bg-red-600 border-red-800' : 'bg-transparent border-gray-600 text-gray-400'}`}>Toll</button>
-               <button type="button" onClick={() => setFormType('Bounty')} className={`flex-1 py-2 font-bold uppercase border-2 ${formType === 'Bounty' ? 'bg-green-600 border-green-800' : 'bg-transparent border-gray-600 text-gray-400'}`}>Bounty</button>
-            </div>
-            <div>
-               <label className="block text-xs uppercase mb-1 text-gray-400">Name</label>
-               <input required type="text" value={formName} onChange={e => setFormName(e.target.value)} className="w-full bg-[#3e2723] border-2 border-black p-2 text-white outline-none focus:border-[#ffcc00]" placeholder="e.g. Castle Upkeep" />
-            </div>
-            <div>
-               <label className="block text-xs uppercase mb-1 text-gray-400">Amount</label>
-               <input required type="number" value={formAmount} onChange={e => setFormAmount(e.target.value)} className="w-full bg-[#3e2723] border-2 border-black p-2 text-white outline-none focus:border-[#ffcc00]" />
-            </div>
-            {formType === 'Toll' && (
-              <div>
-                 <label className="block text-xs uppercase mb-1 text-gray-400">Category</label>
-                 <select required value={formCategory} onChange={e => setFormCategory(e.target.value)} className="w-full bg-[#3e2723] border-2 border-black p-2 text-white outline-none focus:border-[#ffcc00]">
-                    <option value="" disabled>Select category...</option>
-                    {EXPENSE_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
-                 </select>
-              </div>
-            )}
-            <div>
-               <label className="block text-xs uppercase mb-1 text-gray-400">{formType === 'Toll' ? 'Source Rune' : 'Target Rune'}</label>
-               <select required value={formRune} onChange={e => setFormRune(e.target.value)} className="w-full bg-[#3e2723] border-2 border-black p-2 text-white outline-none focus:border-[#ffcc00]">
-                  <option value="" disabled>Select rune...</option>
-                  {formType === 'Bounty' && <option value="potion">🧪 Potion Stash</option>}
-                  {RUNES.map(r => <option key={r.id} value={r.id}>{r.icon} {r.name}</option>)}
-               </select>
-            </div>
-            <div className="flex gap-4">
-               <div className="flex-1">
-                 <label className="block text-xs uppercase mb-1 text-gray-400">Frequency</label>
-                 <select value={formFreq} onChange={e => setFormFreq(e.target.value as any)} className="w-full bg-[#3e2723] border-2 border-black p-2 text-white outline-none focus:border-[#ffcc00]">
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                 </select>
-               </div>
-               {formFreq !== 'daily' && (
-                 <div className="flex-1">
-                   <label className="block text-xs uppercase mb-1 text-gray-400">{formFreq === 'weekly' ? 'Day of Week (1-7)' : 'Date of Month (1-31)'}</label>
-                   <input required type="number" min="1" max={formFreq === 'weekly' ? 7 : 31} value={formFreqVal} onChange={e => setFormFreqVal(Number(e.target.value))} className="w-full bg-[#3e2723] border-2 border-black p-2 text-white outline-none focus:border-[#ffcc00]" />
-                 </div>
-               )}
-            </div>
-            <div className="flex items-center gap-2 mt-2">
-               <input type="checkbox" id="autolog" checked={formAutoLog} onChange={e => setFormAutoLog(e.target.checked)} className="w-4 h-4 cursor-pointer accentuate-[#ffcc00]" />
-               <label htmlFor="autolog" className="text-sm uppercase cursor-pointer">Auto-Log (Consume HP automatically)</label>
-            </div>
-            <div className="flex justify-end gap-2 pt-4 border-t-2 border-[#5d4037]">
-               <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border-2 border-gray-500 text-gray-400 uppercase font-bold hover:bg-white/10">Cancel</button>
-               <button type="submit" className="px-6 py-2 border-2 border-black bg-[#ffcc00] text-black uppercase font-bold shadow-[2px_2px_0_0_#000] hover:translate-y-px hover:shadow-[1px_1px_0_0_#000]">Create</button>
-            </div>
-          </form>
-        </div>
-      ) : (
-        <button onClick={() => setShowForm(true)} className="mb-6 w-full py-3 border-4 border-dashed border-black font-bold uppercase hover:bg-black/10 flex justify-center items-center gap-2">
-          <Plus /> {language === 'id' ? 'Tambah Misi Terjadwal' : 'Add Scheduled Quest'}
-        </button>
+      {view === 'list' && (
+        showForm ? renderForm() : (
+          <button onClick={() => {
+            resetForm();
+            setShowForm(true);
+          }} className="mb-6 w-full py-3 border-4 border-dashed border-black font-bold uppercase hover:bg-black/10 flex justify-center items-center gap-2">
+            <Plus /> {language === 'id' ? 'Tambah Misi Terjadwal' : 'Add Scheduled Quest'}
+          </button>
+        )
       )}
 
       {view === 'month' && (
@@ -191,7 +196,7 @@ export default function RoyalCalendar({ scheduledEvents }: RoyalCalendarProps) {
             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
               <div key={d} className="text-center font-bold text-xs uppercase bg-[#5d4037] text-[#f4e4bc] py-1 border border-black">{d}</div>
             ))}
-            {calendarDays.map((day, idx) => {
+            {calendarDays.map((day) => {
               const strDate = format(day, 'yyyy-MM-dd');
               const isCurrentMonth = isSameMonth(day, currentDate);
               const dayEvts = getEventsForDay(day);
@@ -199,7 +204,10 @@ export default function RoyalCalendar({ scheduledEvents }: RoyalCalendarProps) {
               return (
                 <button 
                   key={strDate} 
-                  onClick={() => setSelectedDay(day)}
+                  onClick={() => {
+                    setSelectedDay(day);
+                    setShowForm(false);
+                  }}
                   className={`min-h-[80px] p-1 border-2 border-dashed flex flex-col text-left transition-colors ${
                     isCurrentMonth ? (selectedDay && isSameDay(day, selectedDay) ? 'border-amber-500 bg-amber-50' : 'border-gray-400 bg-gray-50 hover:bg-gray-100') : 'border-gray-200 bg-gray-100 opacity-50'
                   }`}
@@ -222,11 +230,26 @@ export default function RoyalCalendar({ scheduledEvents }: RoyalCalendarProps) {
             })}
           </div>
           {selectedDay && (
-            <div className="mt-6 border-t-4 border-dashed border-[#5d4037] pt-4">
+            <div className="mt-6 border-t-4 border-dashed border-[#5d4037] pt-4 animate-in slide-in-from-bottom-2">
                <div className="flex justify-between items-center mb-4">
                   <h3 className="font-display text-xl uppercase">Events for {format(selectedDay, 'dd MMM yyyy')}</h3>
-                  <button onClick={() => setSelectedDay(null)} className="text-gray-500 hover:text-black uppercase text-xs font-bold border-2 border-transparent hover:border-black p-1">Close X</button>
+                  <button onClick={() => {
+                    setSelectedDay(null);
+                    setShowForm(false);
+                  }} className="text-gray-500 hover:text-black uppercase text-xs font-bold border-2 border-transparent hover:border-black p-1">Close X</button>
                </div>
+               
+               {showForm ? renderForm() : (
+                 <button onClick={() => {
+                   resetForm();
+                   setFormFreq('monthly');
+                   setFormFreqVal(Number(format(selectedDay, 'd')));
+                   setShowForm(true);
+                 }} className="mb-4 w-full py-2 border-2 border-dashed border-black font-bold uppercase hover:bg-black/10 flex justify-center items-center gap-2">
+                   <Plus size={16} /> {language === 'id' ? 'Jadwalkan di Tanggal Ini' : 'Schedule on this Date'}
+                 </button>
+               )}
+
                <div className="flex flex-col gap-2">
                  {getEventsForDay(selectedDay).length === 0 ? (
                    <p className="text-sm font-bold text-gray-400 font-sans uppercase">No events scheduled on this day.</p>

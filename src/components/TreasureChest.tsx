@@ -1,30 +1,32 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Transaction, RUNES, OperationType } from '../types';
+import { db, auth } from '../lib/firebase';
+import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppStore } from '../store';
 import { translations } from '../lib/i18n';
-import { auth, db } from '../lib/firebase';
-import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { handleFirestoreError } from '../lib/errorHandler';
 
 export default function TreasureChest({ transactions }: { transactions: Transaction[] }) {
   const language = useAppStore(state => state.language);
   const t = translations[language];
 
+  const [potionForm, setPotionForm] = useState<'buy' | 'drink' | null>(null);
+  const [potionAmount, setPotionAmount] = useState('');
+  const [potionRune, setPotionRune] = useState(RUNES[0].id);
+  const [loading, setLoading] = useState(false);
+
   const balances = useMemo(() => {
     const acc: Record<string, number> = {};
     RUNES.forEach(r => acc[r.id] = 0);
-    
-    transactions.forEach(t => {
-      if (acc[t.rune] !== undefined) {
-        if (t.type === 'Gain' || t.type === 'PotionDrink') acc[t.rune] += t.amount;
-        else if (t.type === 'Expense' || t.type === 'PotionBuy') acc[t.rune] -= t.amount;
+    transactions.forEach(tx => {
+      if (acc[tx.rune] !== undefined) {
+        if (tx.type === 'Gain' || tx.type === 'PotionDrink') acc[tx.rune] += tx.amount;
+        else if (tx.type === 'Expense' || tx.type === 'PotionBuy') acc[tx.rune] -= tx.amount;
       }
     });
     return acc;
   }, [transactions]);
-
-  const total = Object.values(balances).reduce((a, b) => a + b, 0);
 
   const potionStash = useMemo(() => {
     return transactions.reduce((acc, tx) => {
@@ -34,16 +36,10 @@ export default function TreasureChest({ transactions }: { transactions: Transact
     }, 0);
   }, [transactions]);
 
-  const [potionForm, setPotionForm] = useState<'buy' | 'drink' | null>(null);
-  const [potionAmount, setPotionAmount] = useState('');
-  const [potionRune, setPotionRune] = useState(RUNES[0].id);
-  const [loading, setLoading] = useState(false);
-
   const handlePotionAction = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth.currentUser || !potionForm || !potionAmount) return;
     setLoading(true);
-
     try {
       const txRef = doc(collection(db, 'users', auth.currentUser.uid, 'transactions'));
       await setDoc(txRef, {
@@ -63,73 +59,96 @@ export default function TreasureChest({ transactions }: { transactions: Transact
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full">
-      <div className="bg-[#3e2723] border-4 border-black p-4 flex-1 shadow-[4px_4px_0_0_#000]">
-        <h2 className="text-[#ffcc00] font-sans text-sm md:text-base uppercase mb-4 border-b-2 border-black pb-2 flex items-center gap-2">
-          <span>💰</span> {t.treasureChest}
-        </h2>
-        <div className="space-y-4">
-          {RUNES.map(r => (
-            <motion.div 
-              key={r.id} 
-              className="flex justify-between items-center bg-[#2b1d12] p-2 border-2 border-black"
+    <div className="bg-[#2b1d12] border-4 border-black p-4 shadow-[4px_4px_0_0_#000]">
+      <h2 className="font-display text-lg uppercase text-[#ffcc00] mb-4 border-b-2 border-dashed border-[#5d4037] pb-2 flex items-center gap-2">
+        <span className="text-2xl drop-shadow-[2px_2px_0px_#000]">💰</span> {t.treasureChest}
+      </h2>
+      
+      <div className="space-y-4">
+        {/* Potions */}
+        <div className="bg-indigo-900 border-2 border-black p-3 relative hover:scale-[1.02] transition-transform">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs uppercase font-bold text-indigo-300 flex items-center gap-2">
+              <span className="text-xl">🧪</span> Emergency Potions
+            </span>
+            <span className="text-lg font-bold text-white tracking-widest">Rp {potionStash.toLocaleString('id-ID')}</span>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPotionForm(potionForm === 'buy' ? null : 'buy')}
+              className={`flex-1 text-xs uppercase font-bold py-1 border-2 border-black transition-colors ${
+                potionForm === 'buy' ? 'bg-indigo-400 text-black' : 'bg-indigo-700 text-white hover:bg-indigo-600'
+              }`}
             >
-              <div className="flex items-center gap-2">
-                <span className="text-xl">{r.icon}</span>
-                <span className="font-sans text-[10px] md:text-sm uppercase text-[#f4e4bc]">{r.name}</span>
-              </div>
-              <div className="font-sans text-[10px] md:text-sm text-[#aed581]">Rp {(balances[r.id] || 0).toLocaleString('id-ID')}</div>
-            </motion.div>
-          ))}
-        </div>
-        <div className="mt-8 pt-4 border-t-2 border-black">
-          <div className="font-sans text-[10px] md:text-xs uppercase opacity-50 mb-1 text-[#f4e4bc]">{t.totalNetWorth}</div>
-          <div className="font-sans text-xl md:text-2xl font-bold text-[#ffcc00] drop-shadow-md">Rp {total.toLocaleString('id-ID')}</div>
-        </div>
-      </div>
-
-      <div className="bg-indigo-900 border-4 border-black p-4 shadow-[4px_4px_0_0_#000]">
-        <h2 className="text-[#ffcc00] font-sans text-sm md:text-base uppercase mb-2 border-b-2 border-black pb-2 flex items-center gap-2">
-          <span>🧪</span> {t.potionStash}
-        </h2>
-        <div className="font-sans text-xl md:text-2xl font-bold text-purple-300 drop-shadow-md mb-2">Rp {potionStash.toLocaleString('id-ID')}</div>
-        <p className="text-[10px] text-indigo-300 italic mb-4">{t.potionHint}</p>
-        
-        <div className="flex gap-2">
-          <button onClick={() => setPotionForm(potionForm === 'buy' ? null : 'buy')} className={`flex-1 text-[10px] py-1 border-2 border-black uppercase font-bold shadow-[2px_2px_0_0_#000] active:translate-y-1 active:shadow-none ${potionForm === 'buy' ? 'bg-indigo-400 text-black' : 'bg-indigo-700 text-white hover:bg-indigo-600'}`}>+{t.buy}</button>
-          <button onClick={() => setPotionForm(potionForm === 'drink' ? null : 'drink')} disabled={potionStash <= 0} className={`flex-1 text-[10px] py-1 border-2 border-black uppercase font-bold shadow-[2px_2px_0_0_#000] active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed ${potionForm === 'drink' ? 'bg-pink-400 text-black' : 'bg-pink-700 text-white hover:bg-pink-600'}`}>-{t.drink}</button>
-        </div>
-
-        <AnimatePresence>
-          {potionForm && (
-            <motion.form 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              onSubmit={handlePotionAction}
-              className="mt-4 flex flex-col gap-2 overflow-hidden"
+              + {t.buy}
+            </button>
+            <button
+              disabled={potionStash <= 0}
+              onClick={() => setPotionForm(potionForm === 'drink' ? null : 'drink')}
+              className={`flex-1 text-xs uppercase font-bold py-1 border-2 border-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                potionForm === 'drink' ? 'bg-pink-400 text-black' : 'bg-pink-700 text-white hover:bg-pink-600'
+              }`}
             >
-              <input 
-                type="number" 
-                min="1" 
-                max={potionForm === 'drink' ? potionStash : undefined}
-                required
-                value={potionAmount}
-                onChange={e => setPotionAmount(e.target.value)}
-                placeholder="Amount"
-                className="w-full bg-[#1a1a17] border-2 border-black p-2 font-sans text-sm text-white focus:outline-none focus:border-[#ffcc00]"
-              />
-              <select 
-                value={potionRune} 
-                onChange={e => setPotionRune(e.target.value)}
-                className="w-full bg-[#1a1a17] border-2 border-black p-2 font-sans text-sm text-white focus:outline-none"
+              - {t.drink}
+            </button>
+          </div>
+          
+          <AnimatePresence>
+            {potionForm && (
+              <motion.form 
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                onSubmit={handlePotionAction}
+                className="mt-3 overflow-hidden flex flex-col gap-2"
               >
-                {RUNES.map(r => <option key={r.id} value={r.id}>{r.icon} {r.name}</option>)}
-              </select>
-              <button disabled={loading} type="submit" className="w-full bg-[#ffcc00] text-black font-bold uppercase text-xs py-2 border-2 border-black disabled:opacity-50">{loading ? '...' : 'Confirm'}</button>
-            </motion.form>
-          )}
-        </AnimatePresence>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    min="1"
+                    max={potionForm === 'drink' ? potionStash : undefined}
+                    required
+                    value={potionAmount}
+                    onChange={e => setPotionAmount(e.target.value)}
+                    placeholder="Amount..."
+                    className="w-1/2 bg-[#1a1a17] border-2 border-black p-2 font-sans text-sm text-white focus:outline-none focus:border-[#ffcc00]"
+                  />
+                  <select
+                    value={potionRune}
+                    onChange={e => setPotionRune(e.target.value)}
+                    className="w-1/2 bg-[#1a1a17] border-2 border-black p-2 font-sans text-sm text-white focus:outline-none"
+                  >
+                    {RUNES.map(r => (
+                      <option key={r.id} value={r.id}>{r.icon} {r.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  disabled={loading}
+                  type="submit"
+                  className="w-full bg-[#ffcc00] text-black font-bold uppercase text-xs py-2 border-2 border-black active:translate-y-1 shadow-[2px_2px_0_0_#000] active:shadow-none transition-all disabled:opacity-50"
+                >
+                  {loading ? '...' : (language === 'id' ? 'Konfirmasi' : 'Confirm')}
+                </button>
+              </motion.form>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Runes */}
+        {RUNES.map(r => (
+          <div key={r.id} className="bg-[#1a1a17] border-2 border-[#3d251e] p-3 flex justify-between items-center hover:border-[#ffcc00] transition-colors">
+            <div className="flex items-center gap-2">
+              <span className="text-xl drop-shadow-md">{r.icon}</span>
+              <span className="font-sans text-xs md:text-sm uppercase text-[#f4e4bc] tracking-wider">{r.name}</span>
+            </div>
+            <span className="font-sans text-sm md:text-base font-bold text-[#aed581]">
+              Rp {(balances[r.id] || 0).toLocaleString('id-ID')}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );

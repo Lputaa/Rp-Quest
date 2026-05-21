@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Transaction } from '../types';
 import { useAppStore } from '../store';
 import { translations } from '../lib/i18n';

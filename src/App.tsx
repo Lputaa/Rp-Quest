@@ -3,16 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { auth, loginWithGoogle, logout } from './lib/firebase';
 import { useAppStore } from './store';
-import Onboarding from './components/Onboarding';
-import Dashboard from './components/Dashboard';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from './lib/firebase';
 import { handleFirestoreError } from './lib/errorHandler';
 import { OperationType } from './types';
 import { translations } from './lib/i18n';
+
+const Onboarding = lazy(() => import('./components/Onboarding'));
+const Dashboard = lazy(() => import('./components/Dashboard'));
 
 export default function App() {
   const { user, authLoading, setUser, setAuthLoading, language, setLanguage } = useAppStore();
@@ -88,11 +89,13 @@ export default function App() {
           {t.logout}
         </button>
       </div>
-      {!hasProfile ? (
-        <Onboarding onComplete={() => setHasProfile(true)} />
-      ) : (
-        <Dashboard />
-      )}
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center font-display text-2xl animate-pulse text-[#ffcc00]">{t.loading}</div>}>
+        {!hasProfile ? (
+          <Onboarding onComplete={() => setHasProfile(true)} />
+        ) : (
+          <Dashboard />
+        )}
+      </Suspense>
     </div>
   );
 }

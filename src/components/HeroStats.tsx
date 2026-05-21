@@ -1,13 +1,21 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
+import { Volume2, VolumeX } from 'lucide-react';
 import { Transaction, UserProfile } from '../types';
 import { isSameMonth, subDays, isSameDay } from 'date-fns';
 import { useAppStore } from '../store';
 import { translations } from '../lib/i18n';
+import { soundEngine } from '../lib/SoundEngine';
 
 export default function HeroStats({ transactions, profile }: { transactions: Transaction[], profile: UserProfile }) {
   const language = useAppStore(state => state.language);
   const t = translations[language];
+  const [isPlayingMusic, setIsPlayingMusic] = useState(false);
+
+  const toggleMusic = async () => {
+    const isPlaying = await soundEngine.toggleMusic();
+    setIsPlayingMusic(isPlaying);
+  };
 
   const stats = useMemo(() => {
     const today = new Date();
@@ -22,12 +30,11 @@ export default function HeroStats({ transactions, profile }: { transactions: Tra
     let totalNetWorth = 0;
 
     transactions.forEach(t => {
-      // Calculate stash considering all time
       if (t.type === 'PotionBuy') potionStash += t.amount;
       if (t.type === 'PotionDrink') potionStash -= t.amount;
       
-      if (t.type === 'Gain') totalNetWorth += t.amount;
-      if (t.type === 'Expense') totalNetWorth -= t.amount;
+      if (t.type === 'Gain' || t.type === 'PotionDrink') totalNetWorth += t.amount;
+      if (t.type === 'Expense' || t.type === 'PotionBuy') totalNetWorth -= t.amount;
     });
 
     currentMonthTxs.forEach(t => {
@@ -104,14 +111,15 @@ export default function HeroStats({ transactions, profile }: { transactions: Tra
     <div>
       <div className="flex items-center gap-2 md:gap-3 mb-1">
         <h1 className="font-display text-2xl md:text-3xl lg:text-4xl font-bold uppercase tracking-tighter text-[#ffcc00] leading-normal drop-shadow-[4px_4px_0_#000]">
-          {stats.avatar} {profile.gender === 'Madam' ? 'Lady' : 'Sir'} {stats.charName}
+          {profile.gender === 'Madam' ? 'Lady' : 'Sir'} {stats.charName}
         </h1>
+        <button 
+          onClick={toggleMusic} 
+          className="fixed bottom-6 right-6 z-[100] bg-[#3e2723] hover:bg-[#5d4037] text-[#ffcc00] p-4 border-4 border-black rounded-full shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-[2px_2px_0_0_#000] transition-all"
+        >
+          {isPlayingMusic ? <Volume2 size={24} /> : <VolumeX size={24} />}
+        </button>
       </div>
-      {profile && (profile.monthlyIncome === 0 || !profile.monthlyIncome) && (
-        <div className="bg-red-900 border-2 border-black text-white text-xs p-1 px-2 inline-block mb-2 font-bold uppercase animate-pulse">
-          ⚠️ {language === 'id' ? 'Setir Gaji di Settings!' : 'Set Income in Settings!'}
-        </div>
-      )}
       <div className="flex flex-col gap-2 md:gap-4 flex-wrap">
         <div className="flex items-center gap-2 md:gap-4 flex-wrap">
           <span className={`font-sans px-3 py-1 border-2 text-xs uppercase flex items-center gap-2 font-bold transition-all ${getLevelStyle(stats.title)}`} style={{fontFamily: 'monospace'}}>
@@ -144,13 +152,13 @@ export default function HeroStats({ transactions, profile }: { transactions: Tra
         <div className="w-full max-w-sm flex flex-col gap-1">
           <div className="flex justify-between text-[10px] uppercase font-bold text-amber-600 tracking-widest font-sans">
             <span>EXP</span>
-            <span>{(stats.monthGain % 1000000).toLocaleString('id-ID')} / 1.000.000</span>
+            <span>{Math.max(0, stats.monthGain % 1000000).toLocaleString('id-ID')} / 1.000.000</span>
           </div>
           <div className="h-2 w-full bg-black/10 border border-black/30 overflow-hidden relative">
             <motion.div 
               className="h-full bg-[#ffcc00] border-r border-[#d4a000]"
               initial={{ width: 0 }}
-              animate={{ width: `${(stats.monthGain % 1000000) / 1000000 * 100}%` }}
+              animate={{ width: `${Math.max(0, Math.min(100, (stats.monthGain % 1000000) / 1000000 * 100))}%` }}
               transition={{ type: 'spring', stiffness: 100, damping: 20 }}
             />
           </div>

@@ -12,7 +12,7 @@ service cloud.firestore {
     function isValidId(id) { return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
 
     function isValidUser(data) {
-      // Allow optional fields characterName, avatar, customHPCap, gender, targetDailyExpense, targetSavings
+      // Allow optional fields characterName, avatar, customHPCap, gender, targetDailyExpense, targetSavings, mainQuestName, mainQuestTarget, mainQuestProgress
       return data.keys().hasAll(['monthlyIncome', 'createdAt', 'updatedAt']) &&
              data.monthlyIncome is number &&
              data.monthlyIncome >= 0 &&
@@ -22,6 +22,10 @@ service cloud.firestore {
              (!('characterName' in data) || (data.characterName is string)) &&
              (!('avatar' in data) || (data.avatar is string)) &&
              (!('gender' in data) || (data.gender is string)) &&
+             (!('mainQuestName' in data) || (data.mainQuestName is string)) &&
+             (!('mainQuestTarget' in data) || (data.mainQuestTarget is number && data.mainQuestTarget >= 0)) &&
+             (!('mainQuestProgress' in data) || (data.mainQuestProgress is number && data.mainQuestProgress >= 0)) &&
+             (!('vaultQuests' in data) || (data.vaultQuests is list && data.vaultQuests.size() <= 5)) &&
              data.createdAt == request.time &&
              data.updatedAt == request.time;
     }
@@ -35,18 +39,22 @@ service cloud.firestore {
              (!('characterName' in data) || (data.characterName is string)) &&
              (!('avatar' in data) || (data.avatar is string)) &&
              (!('gender' in data) || (data.gender is string)) &&
+             (!('mainQuestName' in data) || (data.mainQuestName is string)) &&
+             (!('mainQuestTarget' in data) || (data.mainQuestTarget is number && data.mainQuestTarget >= 0)) &&
+             (!('mainQuestProgress' in data) || (data.mainQuestProgress is number && data.mainQuestProgress >= 0)) &&
+             (!('vaultQuests' in data) || (data.vaultQuests is list && data.vaultQuests.size() <= 5)) &&
              data.updatedAt == request.time &&
              data.createdAt == existing().createdAt;
     }
 
     function isValidTransaction(data) {
       return data.keys().hasAll(['type', 'amount', 'category', 'rune', 'timestamp']) &&
-             data.keys().size() == 5 &&
              data.type is string && data.type.size() > 0 && data.type.size() <= 15 && (data.type == 'Gain' || data.type == 'Expense' || data.type == 'PotionBuy' || data.type == 'PotionDrink') &&
              data.amount is number && data.amount > 0 &&
              data.category is string && data.category.size() > 0 && data.category.size() <= 64 &&
              data.rune is string && data.rune.size() > 0 && data.rune.size() <= 64 &&
-             data.timestamp is timestamp;
+             data.timestamp is timestamp &&
+             (!('description' in data) || (data.description == null || data.description is string));
     }
 
     function isValidScheduledEvent(data) {
@@ -67,7 +75,7 @@ service cloud.firestore {
       allow get: if isSignedIn() && request.auth.uid == userId && isValidId(userId);
       allow create: if isSignedIn() && request.auth.uid == userId && isValidId(userId) && isValidUser(incoming());
       allow update: if isSignedIn() && request.auth.uid == userId && isValidId(userId) && isValidUserUpdate(incoming()) && (
-        incoming().diff(existing()).affectedKeys().hasOnly(['monthlyIncome', 'targetSavings', 'targetDailyExpense', 'updatedAt', 'characterName', 'avatar', 'gender', 'customHPCap'])
+        incoming().diff(existing()).affectedKeys().hasOnly(['monthlyIncome', 'targetSavings', 'targetDailyExpense', 'updatedAt', 'characterName', 'avatar', 'gender', 'customHPCap', 'mainQuestName', 'mainQuestTarget', 'mainQuestProgress', 'vaultQuests'])
       );
       
       match /transactions/{transactionId} {

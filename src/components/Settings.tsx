@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserProfile, OperationType } from '../types';
 import { auth, db } from '../lib/firebase';
 import { doc, updateDoc, serverTimestamp, collection, writeBatch, Timestamp } from 'firebase/firestore';
@@ -191,8 +191,9 @@ export default function Settings({ profile }: { profile: UserProfile }) {
         </div>
 
         <div>
-          <label className="block font-sans text-sm md:text-base uppercase font-bold tracking-widest text-[#3e2723] mb-2">{t.charName}</label>
+          <label htmlFor="charNameSetting" className="block font-sans text-sm md:text-base uppercase font-bold tracking-widest text-[#3e2723] mb-2">{t.charName}</label>
           <input
+            id="charNameSetting"
             type="text"
             required
             value={formData.characterName}
@@ -201,26 +202,18 @@ export default function Settings({ profile }: { profile: UserProfile }) {
           />
         </div>
 
-        <div>
-          <label className="block font-sans text-sm md:text-base uppercase font-bold tracking-widest text-[#3e2723] mb-2">{t.savingsLabel}</label>
-          <input
-            type="number"
-            required
-            min="0"
-            value={formData.targetDailyExpense}
-            onChange={(e) => setFormData({ ...formData, targetDailyExpense: e.target.value })}
-            className="w-full bg-white border-4 border-[#3e2723] p-3 font-sans text-lg text-[#3e2723] focus:outline-none focus:border-[#ffcc00] shadow-[inset_4px_4px_0_rgba(0,0,0,0.1)]"
-            placeholder={t.targetExpensePlaceholder}
-          />
-        </div>
+
 
         <div>
-          <label className="block font-sans text-sm md:text-base uppercase font-bold tracking-widest text-[#3e2723] mb-2 flex items-center gap-2">
+          <label htmlFor="customHPCapSetting" className="block font-sans text-sm md:text-base uppercase font-bold tracking-widest text-[#3e2723] mb-2 flex items-center gap-2">
             {t.customHp}
             <span className="text-[10px] bg-red-200 text-red-800 px-1 italic">H+1</span>
           </label>
           <input
+            id="customHPCapSetting"
             type="number"
+            inputMode="numeric"
+            pattern="[0-9]*"
             required
             min="10"
             value={formData.customHPCap}

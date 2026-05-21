@@ -1,6 +1,5 @@
 import React from 'react';
 import { useAppStore } from '../store';
-import { translations } from '../lib/i18n';
 
 export default function Guidebook() {
   const language = useAppStore(state => state.language);

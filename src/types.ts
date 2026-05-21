@@ -8,8 +8,19 @@ export interface UserProfile {
   monthlyIncome: number;
   targetDailyExpense?: number;
   targetSavings?: number; // legacy
+  vaultQuests?: VaultQuest[];
+  mainQuestName?: string; // legacy
+  mainQuestTarget?: number; // legacy
+  mainQuestProgress?: number; // legacy
   createdAt: Timestamp;
   updatedAt: Timestamp;
+}
+
+export interface VaultQuest {
+  id: string;
+  name: string;
+  target: number;
+  progress: number;
 }
 
 export type TransactionType = 'Gain' | 'Expense' | 'PotionBuy' | 'PotionDrink';
@@ -22,6 +33,7 @@ export interface Transaction {
   rune: string;
   timestamp: Timestamp;
   isPending?: boolean;
+  description?: string;
 }
 
 export const GAIN_CATEGORIES = [

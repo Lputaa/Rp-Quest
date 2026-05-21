@@ -3,9 +3,9 @@ import { Transaction, UserProfile, EXPENSE_CATEGORIES, GAIN_CATEGORIES } from '.
 import { useAppStore } from '../store';
 import { translations } from '../lib/i18n';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { format, subDays, isSameDay, startOfMonth, isSameMonth, eachDayOfInterval, eachWeekOfInterval, startOfWeek } from 'date-fns';
+import { format, subDays, isSameDay, startOfMonth, isSameMonth, eachDayOfInterval } from 'date-fns';
 
-export default function OracleScroll({ transactions, profile, maxHP }: { transactions: Transaction[], profile: UserProfile | null, maxHP: number }) {
+export default function OracleScroll({ transactions, maxHP }: { transactions: Transaction[], maxHP: number }) {
   const language = useAppStore(state => state.language);
   const t = translations[language];
 

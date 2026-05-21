@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef, lazy, Suspense } from 'react';
 import { db, auth } from '../lib/firebase';
-import { collection, query, orderBy, onSnapshot, getDocs, where } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, Timestamp, addDoc, updateDoc } from 'firebase/firestore';
 import { handleFirestoreError } from '../lib/errorHandler';
 import { OperationType, Transaction, UserProfile, ScheduledEvent } from '../types';
 import HPBar from './HPBar';
@@ -10,29 +10,35 @@ import QuestLog from './QuestLog';
 import SageChat from './SageChat';
 import DailyQuests from './DailyQuests';
 import HeroStats from './HeroStats';
-import { doc, getDoc } from 'firebase/firestore';
-import { isSameDay } from 'date-fns';
+import { isSameDay, addDays, addMonths } from 'date-fns';
 
-import OracleScroll from './OracleScroll';
-import RoyalCalendar from './RoyalCalendar';
-import Settings from './Settings';
-import Guidebook from './Guidebook';
-import { Timestamp, addDoc, updateDoc, doc } from 'firebase/firestore';
-import { addDays, addMonths, setDate, getDay, isSameDay } from 'date-fns';
+import MainQuest from './MainQuest';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Check } from 'lucide-react';
 
 import { useAppStore } from '../store';
 import { translations } from '../lib/i18n';
 
-function calculateNextDueDate(currentDue: Date, freq: string, freqVal?: number) {
+const OracleScroll = lazy(() => import('./OracleScroll'));
+const GuildReport = lazy(() => import('./GuildReport'));
+const RoyalCalendar = lazy(() => import('./RoyalCalendar'));
+const Settings = lazy(() => import('./Settings'));
+const Guidebook = lazy(() => import('./Guidebook'));
+
+function calculateNextDueDate(currentDue: Date, freq: string) {
   let next = new Date(currentDue);
-  if (freq === 'daily') {
-    next = addDays(next, 1);
-  } else if (freq === 'weekly') {
-    next = addDays(next, 7);
-  } else if (freq === 'monthly') {
-    next = addMonths(next, 1);
+  const now = new Date();
+  
+  let iterations = 0;
+  while (next <= now && iterations < 1000) {
+    if (freq === 'daily') {
+      next = addDays(next, 1);
+    } else if (freq === 'weekly') {
+      next = addDays(next, 7);
+    } else if (freq === 'monthly') {
+      next = addMonths(next, 1);
+    }
+    iterations++;
   }
   return next;
 }
@@ -46,7 +52,26 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [decrees, setDecrees] = useState<ScheduledEvent[]>([]);
 
-  const [activeTab, setActiveTab] = useState<'quest' | 'oracle' | 'calendar' | 'settings' | 'guidebook'>('quest');
+  const [activeTab, setActiveTab] = useState<'quest' | 'oracle' | 'report' | 'calendar' | 'settings' | 'guidebook'>('quest');
+  const [activeWidgetIndex, setActiveWidgetIndex] = useState(0);
+
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const scrollLeft = e.currentTarget.scrollLeft;
+    // Assuming each widget is approx 85vw or 350px width plus margin
+    const width = e.currentTarget.children[0]?.clientWidth || 300;
+    const index = Math.round(scrollLeft / width);
+    setActiveWidgetIndex(index);
+  };
+
+  const scrollToWidget = (index: number) => {
+    if (carouselRef.current) {
+      const width = carouselRef.current.children[0]?.clientWidth || 300;
+      // scroll with gap adjustment
+      carouselRef.current.scrollTo({ left: index * (width + 16), behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     // Process scheduled events auto-logging and decrees
@@ -67,7 +92,7 @@ export default function Dashboard() {
       if (isDue) {
         if (ev.autoLog) {
           // Auto log the transaction
-          const nextDue = calculateNextDueDate(ev.nextDueDate.toDate(), ev.frequency, ev.frequencyValue);
+          const nextDue = calculateNextDueDate(ev.nextDueDate.toDate(), ev.frequency);
           
           const newTx: Transaction = {
             type: ev.rune === 'potion' && ev.type === 'Bounty' ? 'PotionBuy' : (ev.type as any),
@@ -98,7 +123,7 @@ export default function Dashboard() {
   const handleManualLog = async (ev: ScheduledEvent) => {
     if (!auth.currentUser) return;
     const uid = auth.currentUser.uid;
-    const nextDue = calculateNextDueDate(ev.nextDueDate.toDate(), ev.frequency, ev.frequencyValue);
+    const nextDue = calculateNextDueDate(ev.nextDueDate.toDate(), ev.frequency);
     
     const newTx: Transaction = {
       type: ev.rune === 'potion' && ev.type === 'Bounty' ? 'PotionBuy' : (ev.type as any),
@@ -124,18 +149,14 @@ export default function Dashboard() {
     if (!auth.currentUser) return;
     const uid = auth.currentUser.uid;
 
-    const fetchProfile = async () => {
-      try {
-        const docRef = doc(db, 'users', uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setProfile(docSnap.data() as UserProfile);
-        }
-      } catch (error) {
-        handleFirestoreError(error, OperationType.GET, `users/${uid}`);
+    const docRef = doc(db, 'users', uid);
+    const unsubscribeProfile = onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setProfile(docSnap.data() as UserProfile);
       }
-    };
-    fetchProfile();
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, `users/${uid}`);
+    });
 
     const q = query(
       collection(db, 'users', uid, 'transactions'),
@@ -167,6 +188,7 @@ export default function Dashboard() {
     });
 
     return () => {
+      unsubscribeProfile();
       unsubscribe();
       unsubscribeEvents();
     };
@@ -256,23 +278,34 @@ export default function Dashboard() {
         </div>
         {/* Navigation below Hero Stats & HP Bar for Desktop (lg), original order for Mobile (using flex-col-reverse wrapper on mobile) */}
         <div className="flex flex-col-reverse lg:flex-col w-full gap-4 mt-2 lg:mt-0">
-          <div className="w-full lg:flex lg:justify-center">
-            <nav className="flex gap-2 bg-[#3e2723] p-1 border-2 border-black overflow-x-auto whitespace-nowrap scrollbar-hide lg:w-max">
-              <button onClick={() => setActiveTab('quest')} className={`px-4 py-2 flex-shrink-0 font-sans font-bold uppercase text-xs md:text-sm ${activeTab === 'quest' ? 'bg-[#ffcc00] text-[#3e2723]' : 'text-[#f4e4bc] hover:bg-black/20'}`}>
-                {t.navQuest || 'Quest'}
-              </button>
-              <button onClick={() => setActiveTab('oracle')} className={`px-4 py-2 flex-shrink-0 font-sans font-bold uppercase text-xs md:text-sm ${activeTab === 'oracle' ? 'bg-[#ffcc00] text-[#3e2723]' : 'text-[#f4e4bc] hover:bg-black/20'}`}>
-                {t.navOracle || 'Oracle'}
-              </button>
-              <button onClick={() => setActiveTab('calendar')} className={`px-4 py-2 flex-shrink-0 font-sans font-bold uppercase text-xs md:text-sm ${activeTab === 'calendar' ? 'bg-[#ffcc00] text-[#3e2723]' : 'text-[#f4e4bc] hover:bg-black/20'}`}>
-                {t.navCalendar || 'Calendar'}
-              </button>
-              <button onClick={() => setActiveTab('settings')} className={`px-4 py-2 flex-shrink-0 font-sans font-bold uppercase text-xs md:text-sm ${activeTab === 'settings' ? 'bg-[#ffcc00] text-[#3e2723]' : 'text-[#f4e4bc] hover:bg-black/20'}`}>
-                {t.navSettings || 'Settings'}
-              </button>
-              <button onClick={() => setActiveTab('guidebook')} className={`px-4 py-2 flex-shrink-0 font-sans font-bold uppercase text-xs md:text-sm ${activeTab === 'guidebook' ? 'bg-[#ffcc00] text-[#3e2723]' : 'text-[#f4e4bc] hover:bg-black/20'}`}>
-                {language === 'id' ? 'Panduan' : 'Guidebook'}
-              </button>
+          <div className="w-full lg:flex lg:justify-center sticky top-4 z-[90]">
+            <nav className="flex bg-[#3e2723] p-1.5 border-4 border-black shadow-[6px_6px_0_0_#000] overflow-x-auto whitespace-nowrap scrollbar-hide lg:w-max backdrop-blur-md relative">
+              {[
+                { id: 'quest', label: t.navQuest || 'Quest' },
+                { id: 'oracle', label: t.navOracle || 'Oracle' },
+                { id: 'report', label: language === 'id' ? 'Guild Report' : 'Guild Report' },
+                { id: 'calendar', label: t.navCalendar || 'Calendar' },
+                { id: 'settings', label: t.navSettings || 'Settings' },
+                { id: 'guidebook', label: language === 'id' ? 'Panduan' : 'Guidebook' }
+              ].map((tab) => (
+                <motion.button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ y: 2 }}
+                  className={`relative px-4 py-2 flex-shrink-0 font-sans font-bold uppercase text-xs md:text-sm z-10 transition-colors ${activeTab === tab.id ? 'text-[#3e2723]' : 'text-[#f4e4bc] hover:text-white'}`}
+                >
+                  {activeTab === tab.id && (
+                    <motion.div
+                      layoutId="activeTabBadge"
+                      className="absolute inset-0 bg-[#ffcc00] border-2 border-black"
+                      style={{ zIndex: -1 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                    />
+                  )}
+                  {tab.label}
+                </motion.button>
+              ))}
             </nav>
           </div>
         </div>
@@ -280,36 +313,86 @@ export default function Dashboard() {
       
       {activeTab === 'quest' && (
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          <aside className="col-span-1 lg:col-span-3 flex flex-col gap-4">
+          
+          {/* Mobile Widget Carousel (visible only on mobile) */}
+          <div className="col-span-1 lg:hidden flex flex-col order-2 -mx-4">
+            <div 
+              ref={carouselRef}
+              onScroll={handleScroll}
+              className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 px-4" 
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+               <style>{`.hide-scroll::-webkit-scrollbar { display: none; }`}</style>
+               <div className="w-[85vw] sm:w-[350px] flex-shrink-0 snap-center hide-scroll">
+                 {profile && <MainQuest profile={profile} />}
+               </div>
+               <div className="w-[85vw] sm:w-[350px] flex-shrink-0 snap-center hide-scroll">
+                 <DailyQuests transactions={transactions} />
+               </div>
+               <div className="w-[85vw] sm:w-[350px] flex-shrink-0 snap-center hide-scroll">
+                 <SageChat transactions={transactions} />
+               </div>
+            </div>
+            {/* Pagination Dots */}
+            <div className="flex justify-center gap-2 mt-1 mb-4">
+              {[0, 1, 2, 3].map((idx) => (
+                <button
+                  key={idx}
+                  onClick={() => scrollToWidget(idx)}
+                  className={`w-3 h-3 rounded-full border-2 border-black transition-colors ${activeWidgetIndex === idx ? 'bg-[#ffcc00]' : 'bg-[#3e2723]'}`}
+                  aria-label={`Scroll to widget ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop Left Aside */}
+          <aside className="hidden lg:flex col-span-1 lg:col-span-3 flex-col gap-4 order-1">
+            {profile && <MainQuest profile={profile} />}
             <TreasureChest transactions={transactions} />
             <DailyQuests transactions={transactions} />
           </aside>
           
-          <main className="col-span-1 lg:col-span-6 flex flex-col gap-6">
-            <TransactionForm />
+          <main className="col-span-1 lg:col-span-6 flex flex-col gap-6 order-1 lg:order-2">
+            <TransactionForm transactions={transactions} />
             <QuestLog transactions={transactions} />
           </main>
 
-          <aside className="col-span-1 lg:col-span-3 flex flex-col gap-4">
+          {/* Desktop Right Aside */}
+          <aside className="hidden lg:flex col-span-1 lg:col-span-3 flex-col gap-4 order-3">
             <SageChat transactions={transactions} />
           </aside>
         </div>
       )}
 
       {activeTab === 'oracle' && (
-        <OracleScroll transactions={transactions} profile={profile} maxHP={maxHP} />
+        <Suspense fallback={<div className="p-8 text-center text-[#ffcc00] animate-pulse">Consulting the Oracles...</div>}>
+          <OracleScroll transactions={transactions} maxHP={maxHP} />
+        </Suspense>
+      )}
+
+      {activeTab === 'report' && (
+        <Suspense fallback={<div className="p-8 text-center text-[#ffcc00] animate-pulse">Gathering Reports...</div>}>
+          <GuildReport transactions={transactions} profile={profile} />
+        </Suspense>
       )}
 
       {activeTab === 'calendar' && (
-        <RoyalCalendar scheduledEvents={scheduledEvents} />
+        <Suspense fallback={<div className="p-8 text-center text-[#ffcc00] animate-pulse">Checking Calendar...</div>}>
+          <RoyalCalendar scheduledEvents={scheduledEvents} />
+        </Suspense>
       )}
 
       {activeTab === 'settings' && profile && (
-        <Settings profile={profile} />
+        <Suspense fallback={<div className="p-8 text-center text-[#ffcc00] animate-pulse">Opening Settings...</div>}>
+          <Settings profile={profile} />
+        </Suspense>
       )}
 
       {activeTab === 'guidebook' && (
-        <Guidebook />
+        <Suspense fallback={<div className="p-8 text-center text-[#ffcc00] animate-pulse">Opening Guidebook...</div>}>
+          <Guidebook />
+        </Suspense>
       )}
 
       <footer className="mt-auto py-6 border-t-4 border-[#3d251e] flex flex-col sm:flex-row justify-between items-center gap-4">

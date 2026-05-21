@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db, auth } from '../lib/firebase';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, collection } from 'firebase/firestore';
 import { handleFirestoreError } from '../lib/errorHandler';
-import { OperationType } from '../types';
+import { OperationType, RUNES } from '../types';
 import { useAppStore } from '../store';
 import { translations } from '../lib/i18n';
 import { motion, AnimatePresence } from 'motion/react';
@@ -20,7 +20,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
   const [avatar, setAvatar] = useState(AVATARS[0]);
   const [gender, setGender] = useState<'Sir' | 'Madam'>('Sir');
   const [income, setIncome] = useState('');
-  const [dailyExpense, setDailyExpense] = useState('');
+  const [rune, setRune] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -51,11 +51,22 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
         characterName,
         avatar,
         gender,
-        monthlyIncome: Number(income),
-        targetDailyExpense: Number(dailyExpense),
+        monthlyIncome: 0,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
+
+      if (Number(income) > 0 && rune) {
+        const txRef = doc(collection(db, 'users', auth.currentUser.uid, 'transactions'));
+        await setDoc(txRef, {
+          type: 'Gain',
+          amount: Number(income),
+          category: '🎲 Loot Drop',
+          rune: rune,
+          timestamp: serverTimestamp()
+        });
+      }
+
       onComplete();
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, `users/${auth.currentUser.uid}`);
@@ -86,8 +97,9 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
             <div className="flex gap-4">
               <div className="flex-1 space-y-4">
                 <div>
-                  <label className="block font-sans text-xs uppercase tracking-widest font-bold text-[#f4e4bc] mb-1">{language === 'id' ? 'Nama Karakter' : 'Character Name'}</label>
+                  <label htmlFor="charName" className="block font-sans text-xs uppercase tracking-widest font-bold text-[#f4e4bc] mb-1">{language === 'id' ? 'Nama Karakter' : 'Character Name'}</label>
                   <input
+                    id="charName"
                     type="text"
                     required
                     maxLength={20}
@@ -137,29 +149,32 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
           </div>
 
           <div>
-            <label className="block font-sans text-sm md:text-base uppercase tracking-widest font-bold text-[#f4e4bc] mb-2">{t.incomeLabel}</label>
-            <input
-              type="number"
-              required
-              min="0"
-              value={income}
-              onChange={(e) => setIncome(e.target.value)}
-              className="w-full bg-[#1a1a17] border-4 border-black p-3 font-sans text-xl text-white focus:outline-none focus:border-[#ffcc00] shadow-[inset_4px_4px_0_rgba(0,0,0,0.5)]"
-              placeholder="e.g. 5000000"
-            />
-          </div>
-
-          <div>
-            <label className="block font-sans text-sm md:text-base uppercase tracking-widest font-bold text-[#f4e4bc] mb-2">{t.savingsLabel}</label>
-            <input
-              type="number"
-              required
-              min="0"
-              value={dailyExpense}
-              onChange={(e) => setDailyExpense(e.target.value)}
-              className="w-full bg-[#1a1a17] border-4 border-black p-3 font-sans text-xl text-white focus:outline-none focus:border-[#ffcc00] shadow-[inset_4px_4px_0_rgba(0,0,0,0.5)]"
-              placeholder={t.targetExpensePlaceholder || "e.g. 50000"}
-            />
+            <label htmlFor="incomeRune" className="block font-sans text-sm md:text-base uppercase tracking-widest font-bold text-[#f4e4bc] mb-2">{language === 'id' ? 'Harta Kekayaan Awal (Initial Wealth)' : 'Initial Wealth'}</label>
+            <div className="flex gap-2">
+              <select
+                id="incomeRune"
+                value={rune}
+                onChange={(e) => setRune(e.target.value)}
+                required
+                className="w-1/3 bg-[#1a1a17] border-4 border-black p-3 font-sans text-[10px] md:text-sm text-white focus:outline-none focus:border-[#ffcc00] shadow-[inset_4px_4px_0_rgba(0,0,0,0.5)]"
+              >
+                <option value="" disabled>Rune</option>
+                {RUNES.map(r => <option key={r.id} value={r.id}>{r.icon} {r.name}</option>)}
+              </select>
+              <input
+                id="incomeAmount"
+                type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                required
+                min="0"
+                value={income}
+                onChange={(e) => setIncome(e.target.value)}
+                className="w-2/3 bg-[#1a1a17] border-4 border-black p-3 font-sans text-xl text-white focus:outline-none focus:border-[#ffcc00] shadow-[inset_4px_4px_0_rgba(0,0,0,0.5)]"
+                placeholder="e.g. 1000000"
+                aria-label="Initial Wealth Amount"
+              />
+            </div>
           </div>
 
           <div className="flex items-start gap-3 mt-4 p-2">
