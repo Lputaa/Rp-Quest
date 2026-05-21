@@ -8,7 +8,7 @@ export default function Guidebook() {
   const sections = [
     {
       icon: '📖',
-      title: isId ? 'Selamat Datang di Fantasy Finance!' : 'Welcome to Fantasy Finance!',
+      title: isId ? 'Selamat Datang di Rupiah Quest!' : 'Welcome to Rupiah Quest!',
       content: isId ? (
         <>
           Aplikasi ini mengubah manajemen keuangan membosankan menjadi petualangan RPG yang epik! 
