@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net
+    match /{document=**} { 
+      allow read, write: if false; 
+    }
+
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null && request.auth.token.email_verified == true; }
+    function isValidId(id) { return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+
+    function isValidUser(data) {
+      // Allow optional fields characterName, avatar, customHPCap, gender, targetDailyExpense, targetSavings
+      return data.keys().hasAll(['monthlyIncome', 'createdAt', 'updatedAt']) &&
+             data.monthlyIncome is number &&
+             data.monthlyIncome >= 0 &&
+             (!('targetSavings' in data) || (data.targetSavings is number && data.targetSavings >= 0)) &&
+             (!('targetDailyExpense' in data) || (data.targetDailyExpense is number && data.targetDailyExpense >= 0)) &&
+             (!('customHPCap' in data) || (data.customHPCap is number && data.customHPCap >= 0)) &&
+             (!('characterName' in data) || (data.characterName is string)) &&
+             (!('avatar' in data) || (data.avatar is string)) &&
+             (!('gender' in data) || (data.gender is string)) &&
+             data.createdAt == request.time &&
+             data.updatedAt == request.time;
+    }
+
+    function isValidUserUpdate(data) {
+      return data.monthlyIncome is number &&
+             data.monthlyIncome >= 0 &&
+             (!('targetSavings' in data) || (data.targetSavings is number && data.targetSavings >= 0)) &&
+             (!('targetDailyExpense' in data) || (data.targetDailyExpense is number && data.targetDailyExpense >= 0)) &&
+             (!('customHPCap' in data) || (data.customHPCap is number && data.customHPCap >= 0)) &&
+             (!('characterName' in data) || (data.characterName is string)) &&
+             (!('avatar' in data) || (data.avatar is string)) &&
+             (!('gender' in data) || (data.gender is string)) &&
+             data.updatedAt == request.time &&
+             data.createdAt == existing().createdAt;
+    }
+
+    function isValidTransaction(data) {
+      return data.keys().hasAll(['type', 'amount', 'category', 'rune', 'timestamp']) &&
+             data.keys().size() == 5 &&
+             data.type is string && data.type.size() > 0 && data.type.size() <= 15 && (data.type == 'Gain' || data.type == 'Expense' || data.type == 'PotionBuy' || data.type == 'PotionDrink') &&
+             data.amount is number && data.amount > 0 &&
+             data.category is string && data.category.size() > 0 && data.category.size() <= 64 &&
+             data.rune is string && data.rune.size() > 0 && data.rune.size() <= 64 &&
+             data.timestamp is timestamp;
+    }
+
+    function isValidScheduledEvent(data) {
+      return data.keys().hasAll(['type', 'name', 'amount', 'category', 'rune', 'frequency', 'autoLog', 'nextDueDate']) &&
+             data.type is string && (data.type == 'Toll' || data.type == 'Bounty') &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 64 &&
+             data.amount is number && data.amount > 0 &&
+             data.category is string && data.category.size() <= 64 &&
+             data.rune is string && data.rune.size() > 0 && data.rune.size() <= 64 &&
+             data.frequency is string && (data.frequency == 'daily' || data.frequency == 'weekly' || data.frequency == 'monthly') &&
+             data.autoLog is bool &&
+             data.nextDueDate is timestamp &&
+             (!('frequencyValue' in data) || data.frequencyValue is number) &&
+             (!('lastLoggedAt' in data) || data.lastLoggedAt is timestamp);
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && request.auth.uid == userId && isValidId(userId);
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidId(userId) && isValidUser(incoming());
+      allow update: if isSignedIn() && request.auth.uid == userId && isValidId(userId) && isValidUserUpdate(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['monthlyIncome', 'targetSavings', 'targetDailyExpense', 'updatedAt', 'characterName', 'avatar', 'gender', 'customHPCap'])
+      );
+      
+      match /transactions/{transactionId} {
+        allow get: if isSignedIn() && request.auth.uid == userId && isValidId(transactionId);
+        allow list: if isSignedIn() && request.auth.uid == userId;
+        allow create: if isSignedIn() && request.auth.uid == userId && 
+                      isValidId(transactionId) && isValidTransaction(incoming()) && exists(/databases/$(database)/documents/users/$(userId));
+        allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(transactionId);
+      }
+      
+      match /scheduledEvents/{eventId} {
+        allow get: if isSignedIn() && request.auth.uid == userId && isValidId(eventId);
+        allow list: if isSignedIn() && request.auth.uid == userId;
+        allow create: if isSignedIn() && request.auth.uid == userId && 
+                      isValidId(eventId) && isValidScheduledEvent(incoming()) && exists(/databases/$(database)/documents/users/$(userId));
+        allow update: if isSignedIn() && request.auth.uid == userId && 
+                      isValidId(eventId) && isValidScheduledEvent(incoming()) && (
+                        incoming().diff(existing()).affectedKeys().hasOnly(['nextDueDate', 'lastLoggedAt'])
+                      );
+        allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(eventId);
+      }
+    }
+  }
+}

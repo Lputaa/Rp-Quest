@@ -1,0 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "VT323", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Press Start 2P", ui-monospace, monospace;
+}
+
+body {
+  background-color: #2b1d12;
+  color: #f4e4bc;
+}
