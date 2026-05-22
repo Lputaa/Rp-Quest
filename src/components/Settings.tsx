@@ -15,11 +15,16 @@ import { handleFirestoreError } from "../lib/errorHandler";
 import { useAppStore } from "../store";
 import { translations } from "../lib/i18n";
 import { subDays } from "date-fns";
+import { playSFX } from "../audio";
 
 const AVATARS = ["🧑‍🌾", "🧙‍♂️", "🧝‍♀️", "🧛‍♂️", "🧜‍♀️", "🧞‍♂️", "🦸‍♀️", "🦹‍♂️", "🕵️‍♀️", "🥷"];
 
 export default function Settings({ profile }: { profile: UserProfile }) {
   const language = useAppStore((state) => state.language);
+  const sfxEnabled = useAppStore((state) => state.sfxEnabled);
+  const musicEnabled = useAppStore((state) => state.musicEnabled);
+  const setSfxEnabled = useAppStore((state) => state.setSfxEnabled);
+  const setMusicEnabled = useAppStore((state) => state.setMusicEnabled);
   const t = translations[language];
 
   const [loading, setLoading] = useState(false);
@@ -69,6 +74,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth.currentUser) return;
+    playSFX('questComplete');
     setLoading(true);
     setSuccess(false);
 
@@ -602,6 +608,37 @@ export default function Settings({ profile }: { profile: UserProfile }) {
               Rp {Number(formData.customHPCap).toLocaleString('id-ID')}
             </p>
           )}
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <label className="flex items-center gap-4 cursor-pointer">
+            <span className="block font-sans text-sm md:text-base uppercase font-bold tracking-widest text-[#3e2723] flex-1">
+              SFX Sound {sfxEnabled ? "🔊" : "🔇"}
+            </span>
+            <input 
+              type="checkbox" 
+              checked={sfxEnabled} 
+              onChange={(e) => {
+                setSfxEnabled(e.target.checked);
+                if (e.target.checked) playSFX('click');
+              }} 
+              className="w-6 h-6 border-4 border-black checked:bg-[#ffcc00] cursor-pointer"
+            />
+          </label>
+          <label className="flex items-center gap-4 cursor-pointer">
+             <span className="block font-sans text-sm md:text-base uppercase font-bold tracking-widest text-[#3e2723] flex-1">
+              Ambient Music {musicEnabled ? "🎵" : "🔇"}
+            </span>
+            <input 
+              type="checkbox" 
+              checked={musicEnabled} 
+              onChange={(e) => {
+                setMusicEnabled(e.target.checked);
+                import('../audio').then(module => module.setMusicState(e.target.checked));
+              }}
+              className="w-6 h-6 border-4 border-black checked:bg-[#ffcc00] cursor-pointer"
+            />
+          </label>
         </div>
 
         <button

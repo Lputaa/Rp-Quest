@@ -7,6 +7,7 @@ import { useAppStore } from '../store';
 import { translations } from '../lib/i18n';
 import { motion, AnimatePresence } from 'motion/react';
 import { ExternalLink, X, Dices } from 'lucide-react';
+import { playSFX } from '../audio';
 
 const AVATARS = ['👨‍🚀', '🧙‍♂️', '🧝‍♀️', '🧛‍♂️', '🧜‍♀️', '🧟‍♂️', '🦸‍♀️', '🦹‍♂️', '🕵️‍♀️', '🥷', '🤴', '👸', '🧌', '🤺', '🤹'];
 const FIRST_NAMES = ['Arthur', 'Lancelot', 'Merlin', 'Gawain', 'Morgana', 'Guinevere', 'Percival', 'Bors', 'Fiona', 'Gimli', 'Legolas'];
@@ -30,6 +31,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
   }, []);
 
   const handleRandomize = () => {
+    playSFX('click');
     const randomAvatar = AVATARS[Math.floor(Math.random() * AVATARS.length)];
     const randomFirstName = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
     const randomLastName = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
@@ -47,6 +49,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
     
     setLoading(true);
     try {
+      playSFX('levelUp');
       const userRef = doc(db, 'users', auth.currentUser.uid);
       await setDoc(userRef, {
         characterName,

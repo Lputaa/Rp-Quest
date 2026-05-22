@@ -15,6 +15,7 @@ import MainQuest from './MainQuest';
 import TreasureChest from './TreasureChest';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { playSFX } from '../audio';
 
 import { useAppStore } from '../store';
 import { translations } from '../lib/i18n';
@@ -64,6 +65,7 @@ export default function Dashboard() {
     if (!auth.currentUser || !starterTarget) return;
     const uid = auth.currentUser.uid;
     try {
+      playSFX('questComplete');
       await updateDoc(doc(db, 'users', uid), {
         customHPCap: Number(starterTarget),
         updatedAt: serverTimestamp()
@@ -350,7 +352,10 @@ export default function Dashboard() {
                   ].map((tab) => (
                     <motion.button
                       key={tab.id}
-                      onClick={() => setActiveTab(tab.id as any)}
+                      onClick={() => {
+                        playSFX('click');
+                        setActiveTab(tab.id as any);
+                      }}
                       whileHover={{ y: -2 }}
                       whileTap={{ y: 2 }}
                       className={`relative px-4 py-2 flex-shrink-0 font-sans font-bold uppercase text-xs md:text-sm z-10 transition-colors ${activeTab === tab.id ? 'text-[#3e2723]' : 'text-[#f4e4bc] hover:text-white'}`}
@@ -383,7 +388,10 @@ export default function Dashboard() {
 
       {/* Floating Guidebook Button */}
       <button 
-        onClick={() => setIsGuidebookOpen(true)}
+        onClick={() => {
+          playSFX('click');
+          setIsGuidebookOpen(true);
+        }}
         className="fixed bottom-6 left-6 z-[100] animate-bounce bg-[#ffcc00] hover:bg-white text-[#3e2723] p-4 border-4 border-black rounded-full shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-[2px_2px_0_0_#000] transition-colors flex items-center justify-center group"
       >
         <span className="text-2xl drop-shadow-md">📖</span>
@@ -405,7 +413,10 @@ export default function Dashboard() {
                 )}
               </p>
               <button 
-                onClick={() => setShowStarterInput(true)}
+                onClick={() => {
+                  playSFX('click');
+                  setShowStarterInput(true);
+                }}
                 className="px-8 py-4 bg-[#ffcc00] border-4 border-black font-bold uppercase text-black text-xl hover:-translate-y-1 shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-none transition-all"
               >
                 {language === 'id' ? '🗡️ Mulai!' : '🗡️ Start!'}

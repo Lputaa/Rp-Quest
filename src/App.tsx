@@ -12,15 +12,42 @@ import { db } from './lib/firebase';
 import { handleFirestoreError } from './lib/errorHandler';
 import { OperationType } from './types';
 import { translations } from './lib/i18n';
+import { setMusicState } from './audio';
 
 const Onboarding = lazy(() => import('./components/Onboarding'));
 const Dashboard = lazy(() => import('./components/Dashboard'));
 
 export default function App() {
-  const { user, authLoading, setUser, setAuthLoading, language, setLanguage } = useAppStore();
+  const { user, authLoading, setUser, setAuthLoading, language, setLanguage, musicEnabled } = useAppStore();
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const t = translations[language];
+
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      if (useAppStore.getState().musicEnabled) {
+        setMusicState(true);
+      }
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+    };
+
+    window.addEventListener('click', handleFirstInteraction);
+    window.addEventListener('keydown', handleFirstInteraction);
+
+    return () => {
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!musicEnabled) {
+      setMusicState(false);
+    } else {
+      setMusicState(true);
+    }
+  }, [musicEnabled]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {

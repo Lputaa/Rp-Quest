@@ -6,6 +6,7 @@ import { handleFirestoreError } from '../lib/errorHandler';
 import { OperationType, GAIN_CATEGORIES, EXPENSE_CATEGORIES, RUNES, TransactionType, Transaction } from '../types';
 import { useAppStore } from '../store';
 import { translations } from '../lib/i18n';
+import { playSFX } from '../audio';
 
 export default function TransactionForm({ transactions }: { transactions: Transaction[] }) {
   const language = useAppStore(state => state.language);
@@ -90,6 +91,10 @@ export default function TransactionForm({ transactions }: { transactions: Transa
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth.currentUser || !amount || !category || !rune) return;
+    
+    // Play SFX
+    if (tab === 'Gain') playSFX('coin');
+    else playSFX('hit');
 
     setLoading(true);
     try {
@@ -207,7 +212,11 @@ export default function TransactionForm({ transactions }: { transactions: Transa
 
       <div className="flex border-b-4 border-black">
         <button
-          onClick={() => { setTab('Gain'); setCategory(''); }}
+          onClick={() => { 
+            playSFX('click');
+            setTab('Gain'); 
+            setCategory(''); 
+          }}
           className={`relative flex-1 flex items-center justify-center py-4 font-sans font-bold text-sm md:text-base uppercase border-r-4 border-black transition-colors duration-300 ${tab === 'Gain' ? 'text-black' : 'bg-[#1b5e20] text-[#aed581] hover:bg-[#4caf50]/80'}`}
         >
           {tab === 'Gain' && (
@@ -223,7 +232,11 @@ export default function TransactionForm({ transactions }: { transactions: Transa
           </span>
         </button>
         <button
-          onClick={() => { setTab('Expense'); setCategory(''); }}
+          onClick={() => { 
+            playSFX('click');
+            setTab('Expense'); 
+            setCategory(''); 
+          }}
           className={`relative flex-1 flex items-center justify-center py-4 font-sans font-bold text-sm md:text-base uppercase transition-colors duration-300 ${tab === 'Expense' ? 'text-white' : 'bg-[#b71c1c] text-[#ffcdd2] hover:bg-[#f44336]/80'}`}
         >
           {tab === 'Expense' && (
@@ -294,7 +307,7 @@ export default function TransactionForm({ transactions }: { transactions: Transa
                  <button
                    type="button"
                    key={r.id}
-                   onClick={() => setRune(r.id)}
+                   onClick={() => { playSFX('click'); setRune(r.id); }}
                    aria-pressed={rune === r.id}
                    className={`p-2 border-2 text-left font-sans text-sm md:text-base uppercase font-bold transition-all ${rune === r.id ? 'border-[#ffcc00] bg-[#ffcc00] text-black shadow-[2px_2px_0_0_#000]' : 'border-black bg-[#1a1a17] text-[#aed581] hover:border-[#ffcc00]/50 shadow-[2px_2px_0_0_#000]'}`}
                  >
