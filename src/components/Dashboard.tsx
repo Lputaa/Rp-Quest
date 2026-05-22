@@ -4,7 +4,6 @@ import { collection, query, orderBy, onSnapshot, doc, Timestamp, addDoc, updateD
 import { handleFirestoreError } from '../lib/errorHandler';
 import { OperationType, Transaction, UserProfile, ScheduledEvent } from '../types';
 import HPBar from './HPBar';
-import TreasureChest from './TreasureChest';
 import TransactionForm from './TransactionForm';
 import QuestLog from './QuestLog';
 import SageChat from './SageChat';
@@ -14,7 +13,7 @@ import { isSameDay, addDays, addMonths } from 'date-fns';
 
 import MainQuest from './MainQuest';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Check } from 'lucide-react';
+import { X, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { useAppStore } from '../store';
 import { translations } from '../lib/i18n';
@@ -74,6 +73,29 @@ export default function Dashboard() {
   };
 
   const carouselRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeftNav, setCanScrollLeftNav] = useState(false);
+  const [canScrollRightNav, setCanScrollRightNav] = useState(true);
+
+  const handleNavScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollLeft, scrollWidth, clientWidth } = e.currentTarget;
+    setCanScrollLeftNav(scrollLeft > 0);
+    setCanScrollRightNav(Math.ceil(scrollLeft + clientWidth) < scrollWidth);
+  };
+
+  const scrollNav = (direction: 'left' | 'right') => {
+    if (navRef.current) {
+      const scrollAmount = 150;
+      navRef.current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  useEffect(() => {
+    if (navRef.current) {
+      const { scrollWidth, clientWidth } = navRef.current;
+      setCanScrollRightNav(scrollWidth > clientWidth);
+    }
+  }, []);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const scrollLeft = e.currentTarget.scrollLeft;
@@ -301,34 +323,56 @@ export default function Dashboard() {
         {!isNewAccount && (
           <div className="flex flex-col-reverse lg:flex-col w-full gap-4 mt-2 lg:mt-0">
             <div className="w-full lg:flex lg:justify-center sticky top-4 z-[90]">
-              <nav className="flex bg-[#3e2723] p-1.5 border-4 border-black shadow-[6px_6px_0_0_#000] overflow-x-auto whitespace-nowrap scrollbar-hide lg:w-max backdrop-blur-md relative">
-                {[
-                  { id: 'quest', label: t.navQuest || 'Quest' },
-                  { id: 'oracle', label: t.navOracle || 'Oracle' },
-                  { id: 'report', label: language === 'id' ? 'Guild Report' : 'Guild Report' },
-                  { id: 'calendar', label: t.navCalendar || 'Calendar' },
-                  { id: 'settings', label: t.navSettings || 'Settings' },
-                  { id: 'guidebook', label: language === 'id' ? 'Panduan' : 'Guidebook' }
-                ].map((tab) => (
-                  <motion.button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
-                    whileHover={{ y: -2 }}
-                    whileTap={{ y: 2 }}
-                    className={`relative px-4 py-2 flex-shrink-0 font-sans font-bold uppercase text-xs md:text-sm z-10 transition-colors ${activeTab === tab.id ? 'text-[#3e2723]' : 'text-[#f4e4bc] hover:text-white'}`}
+              <div className="relative w-full lg:w-max">
+                {canScrollLeftNav && (
+                  <button 
+                    onClick={() => scrollNav('left')} 
+                    className="absolute left-0 top-0 bottom-0 z-20 px-1 bg-gradient-to-r from-[#3e2723] via-[#3e2723] to-transparent text-[#ffcc00] flex items-center justify-start w-10 lg:hidden pointer-events-auto shadow-[-4px_0_0_0_#000_inset]"
                   >
-                    {activeTab === tab.id && (
-                      <motion.div
-                        layoutId="activeTabBadge"
-                        className="absolute inset-0 bg-[#ffcc00] border-2 border-black"
-                        style={{ zIndex: -1 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                      />
-                    )}
-                    {tab.label}
-                  </motion.button>
-                ))}
-              </nav>
+                    <ChevronLeft size={20} />
+                  </button>
+                )}
+                <nav 
+                  ref={navRef} 
+                  onScroll={handleNavScroll} 
+                  className="flex bg-[#3e2723] p-1.5 border-4 border-black shadow-[6px_6px_0_0_#000] overflow-x-auto whitespace-nowrap scrollbar-hide w-full lg:w-max backdrop-blur-md relative"
+                >
+                  {[
+                    { id: 'quest', label: t.navQuest || 'Quest' },
+                    { id: 'oracle', label: t.navOracle || 'Oracle' },
+                    { id: 'report', label: language === 'id' ? 'Guild Report' : 'Guild Report' },
+                    { id: 'calendar', label: t.navCalendar || 'Calendar' },
+                    { id: 'settings', label: t.navSettings || 'Settings' },
+                    { id: 'guidebook', label: language === 'id' ? 'Panduan' : 'Guidebook' }
+                  ].map((tab) => (
+                    <motion.button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id as any)}
+                      whileHover={{ y: -2 }}
+                      whileTap={{ y: 2 }}
+                      className={`relative px-4 py-2 flex-shrink-0 font-sans font-bold uppercase text-xs md:text-sm z-10 transition-colors ${activeTab === tab.id ? 'text-[#3e2723]' : 'text-[#f4e4bc] hover:text-white'}`}
+                    >
+                      {activeTab === tab.id && (
+                        <motion.div
+                          layoutId="activeTabBadge"
+                          className="absolute inset-0 bg-[#ffcc00] border-2 border-black"
+                          style={{ zIndex: -1 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                        />
+                      )}
+                      {tab.label}
+                    </motion.button>
+                  ))}
+                </nav>
+                {canScrollRightNav && (
+                  <button 
+                    onClick={() => scrollNav('right')} 
+                    className="absolute right-0 top-0 bottom-0 z-20 px-1 bg-gradient-to-l from-[#3e2723] via-[#3e2723] to-transparent text-[#ffcc00] flex items-center justify-end w-10 lg:hidden pointer-events-auto"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -399,7 +443,7 @@ export default function Dashboard() {
             </div>
             {/* Pagination Dots */}
             <div className="flex justify-center gap-2 mt-1 mb-4">
-              {[0, 1, 2, 3].map((idx) => (
+              {[0, 1, 2].map((idx) => (
                 <button
                   key={idx}
                   onClick={() => scrollToWidget(idx)}
@@ -413,7 +457,6 @@ export default function Dashboard() {
           {/* Desktop Left Aside */}
           <aside className="hidden lg:flex col-span-1 lg:col-span-3 flex-col gap-4 order-1">
             {profile && <MainQuest profile={profile} />}
-            <TreasureChest transactions={transactions} />
             <DailyQuests transactions={transactions} />
           </aside>
           

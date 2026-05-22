@@ -112,7 +112,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
       batch.set(doc(txRef), {
         type: "Gain",
         amount: 25000000,
-        category: "🐉 Dragon's Hoard",
+        category: "🎲 Loot Drop",
         rune: "🏦 Other Bank",
         timestamp: Timestamp.fromDate(subDays(today, 30)),
       });
@@ -120,7 +120,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
       batch.set(doc(txRef), {
         type: "Gain",
         amount: 10000000,
-        category: "👑 Royal Inheritance",
+        category: "🤝 Tribute",
         rune: "🏦 Other Bank",
         timestamp: Timestamp.fromDate(subDays(today, 25)),
       });
@@ -128,7 +128,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
       batch.set(doc(txRef), {
         type: "Gain",
         amount: 5000000,
-        category: "💎 Gemstone Trade",
+        category: "⚗️ Alchemy",
         rune: "🌊 SeaBank",
         timestamp: Timestamp.fromDate(subDays(today, 20)),
       });
@@ -136,7 +136,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
       batch.set(doc(txRef), {
         type: "Gain",
         amount: 2000000,
-        category: "📜 Hero's Bounty",
+        category: "📜 Quest Reward",
         rune: "💙 DANA",
         timestamp: Timestamp.fromDate(subDays(today, 15)),
       });
@@ -179,7 +179,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
           batch.set(doc(txRef), {
             type: "Gain",
             amount: 100000 + Math.floor(Math.random() * 400000),
-            category: "🎲 Random Loot Drop",
+            category: "🎲 Loot Drop",
             rune: i % 2 === 0 ? "💙 DANA" : "🪙 Gold",
             timestamp: Timestamp.fromDate(d),
           });
@@ -190,7 +190,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
       batch.set(doc(txRef), {
         type: "PotionBuy",
         amount: 25, // 25 potions in stash
-        category: "🧪 Bulk Potion Supply",
+        category: "🧪 Emergency Potion",
         rune: "🪙 Gold",
         timestamp: Timestamp.fromDate(subDays(today, 10)),
       });
@@ -198,7 +198,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
       batch.set(doc(txRef), {
         type: "PotionDrink",
         amount: 3,
-        category: "🧪 Emergency Healing",
+        category: "🧪 Emergency Potion",
         rune: "🪙 Gold",
         timestamp: Timestamp.fromDate(subDays(today, 5)),
       });
@@ -231,7 +231,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
         frequency: "weekly",
         frequencyValue: 1, // Monday
         rune: "🪙 Gold",
-        category: "🧪 Potion Stash Subsidy",
+        category: "⚗️ Alchemy",
         autoLog: true,
         nextDueDate: Timestamp.fromDate(new Date()),
         createdAt: serverTimestamp(),
@@ -241,7 +241,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
         type: "Toll",
         name: "🏰 Internet Connection",
         amount: 350000,
-        category: "🔮 Magic Orb Maintenance",
+        category: "🏡 Castle Upkeep",
         frequency: "monthly",
         frequencyValue: 5,
         rune: "🏦 Other Bank",
@@ -254,7 +254,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
         type: "Toll",
         name: "📜 Streaming Subscription",
         amount: 55000,
-        category: "🎭 Bard's Tales",
+        category: "🎭 Tavern Entertainment",
         frequency: "monthly",
         frequencyValue: 15,
         rune: "💙 DANA",
@@ -267,7 +267,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
         type: "Toll",
         name: "🏋️ Guild Membership",
         amount: 250000,
-        category: "⚔️ Warrior's Guild",
+        category: "⚔️ Armory",
         frequency: "monthly",
         frequencyValue: 1,
         rune: "🏦 Other Bank",

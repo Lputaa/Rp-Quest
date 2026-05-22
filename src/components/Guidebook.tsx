@@ -161,6 +161,63 @@ export default function Guidebook() {
       )
     },
     {
+      icon: '🪨',
+      title: isId ? 'Sumber Dana (Runes)' : 'Funding Sources (Runes)',
+      content: isId ? (
+        <ul className="list-disc pl-5 space-y-2 mt-2">
+          <li><strong>🪙 Gold:</strong> Uang tunai atau dompet fisik utama.</li>
+          <li><strong>🛍️ ShopeePay / 💙 DANA / 🌊 SeaBank / 🏦 Other Bank:</strong> Berbagai instrumen penyimpanan kekayaan digital dan rekening bank.</li>
+          <li><strong>🖤 Curse (Hutang):</strong> Kutukan! Gunakan rune ini saat kamu melakukan pengeluaran dengan paylater atau kartu kredit. Berhati-hatilah dengan kutukan agar tidak menumpuk!</li>
+        </ul>
+      ) : (
+        <ul className="list-disc pl-5 space-y-2 mt-2">
+          <li><strong>🪙 Gold:</strong> Physical cash / main physical wallet.</li>
+          <li><strong>🛍️ ShopeePay / 💙 DANA / 🌊 SeaBank / 🏦 Other Bank:</strong> Various digital wallets and bank accounts.</li>
+          <li><strong>🖤 Curse (Debt):</strong> A curse! Use this rune when spending via credit cards or paylater. Be careful not to let the curse accumulate!</li>
+        </ul>
+      )
+    },
+    {
+      icon: '💎',
+      title: isId ? 'Kekayaan Bersih (Net Worth)' : 'Net Worth',
+      content: isId ? (
+        <ul className="list-disc pl-5 space-y-2 mt-2">
+          <li><strong>Net Worth:</strong> Adalah total kekayaan dari seluruh emas yang kamu miliki saat ini.</li>
+          <li><strong>Pemasukan (Gain):</strong> Setiap transaksi pendapatan (Gain) akan menambahkan jumlah emas ke dalam peti hartamu, sehingga nilai Net Worth akan bertambah.</li>
+          <li><strong>Pengeluaran (Toll):</strong> Setiap transaksi pengeluaran (Toll) akan menguras jumlah emas di peti hartamu, sehingga nilai Net Worth akan berkurang.</li>
+          <li>Jaga keseimbangan antara Gain dan Toll agar <em>Net Worth</em> milikmu terus bertambah tebal dan terhindar dari defisit!</li>
+        </ul>
+      ) : (
+        <ul className="list-disc pl-5 space-y-2 mt-2">
+          <li><strong>Net Worth:</strong> The total wealth from all the gold you currently possess.</li>
+          <li><strong>Income (Gain):</strong> Every income transaction (Gain) will add gold to your treasure chest, thus increasing your Net Worth value.</li>
+          <li><strong>Expenses (Toll):</strong> Every expense transaction (Toll) will drain gold from your treasure chest, thus decreasing your Net Worth value.</li>
+          <li>Maintain the balance between Gain and Toll so your <em>Net Worth</em> keeps growing and avoids falling into a deficit!</li>
+        </ul>
+      )
+    },
+    {
+      icon: '🔮',
+      title: isId ? 'Fasilitas Guild (Guild Facilities)' : 'Guild Facilities',
+      content: isId ? (
+        <ul className="list-disc pl-5 space-y-2 mt-2">
+          <li><strong>🔮 Oracle Scroll (Grafik & Statistik):</strong> Gulungan sihir yang menunjukkan ke mana saja aliran uangmu pergi bulan ini. Tab ini terdiri dari ringkasan Grafik Proporsi Kategori dan Net Worth. Pantau terus the Oracle setiap harinya!</li>
+          <li><strong>📋 Guild Report (Riwayat Transaksi):</strong> Buku catatan resmi guild/serikat yang berisi daftar seluruh transaksi yang sudah dikonfirmasi. Kamu bisa memfilter catatan berdasarkan Gain (Pendapatan) atau Toll (Pengeluaran).</li>
+          <li><strong>📅 Kalender Kerajaan (Royal Calendar):</strong> Tampilan kalender kuno untuk melacak aktivitas pada hari tertentu. Hari yang memiliki transaksi akan ditandai dengan warna/titik. Sangat berguna untuk melihat kapan kamu paling banyak menghamburkan uang!</li>
+          <li><strong>💰 The Vault (Peti Harta):</strong> Tempat rahasia untuk melacak keseluruhan kekayaanmu dari berbagai sumber (Runes) serta manajemen Potion (Simpanan Darurat).</li>
+          <li><strong>🦉 SageChat:</strong> Penasihat sihir AI yang dapat membantumu menganalisis situasi keuangan! Tanyakan tips padanya saat kesulitan.</li>
+        </ul>
+      ) : (
+        <ul className="list-disc pl-5 space-y-2 mt-2">
+          <li><strong>🔮 Oracle Scroll (Charts & Stats):</strong> A magical scroll revealing where your gold flows this month. Contains Category Proportion Charts and Net Worth. Check The Oracle daily!</li>
+          <li><strong>📋 Guild Report (Transaction History):</strong> The official guild ledger listing all confirmed transactions. You can filter the records by Gain (Income) or Toll (Expenses).</li>
+          <li><strong>📅 Royal Calendar:</strong> An ancient calendar view to track your transaction activities on specific days. Days with transactions will be marked. Highly useful for tracking your spending frequency!</li>
+          <li><strong>💰 The Vault (Treasure Chest):</strong> A secret place to track your total accumulated wealth from all sources (Runes) as well as managing your Potions (Emergency Funds).</li>
+          <li><strong>🦉 SageChat:</strong> A magical AI advisor that can help you with financial analysis! Ask for tips when you run into trouble.</li>
+        </ul>
+      )
+    },
+    {
       icon: '⚔️',
       title: isId ? 'Strategi Keuangan (Financial Strategy)' : 'Financial Strategy',
       content: isId ? (

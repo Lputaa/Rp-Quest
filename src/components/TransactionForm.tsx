@@ -43,20 +43,22 @@ export default function TransactionForm({ transactions }: { transactions: Transa
   const [potionAmount, setPotionAmount] = useState('');
   const [potionRune, setPotionRune] = useState(RUNES[0].id);
 
-  const [activeChestIndex, setActiveChestIndex] = useState(0);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const scrollLeft = e.currentTarget.scrollLeft;
-    const itemWidth = e.currentTarget.children[1]?.clientWidth || 150;
-    const index = Math.round(scrollLeft / itemWidth);
-    setActiveChestIndex(index);
+    const { scrollLeft, scrollWidth, clientWidth } = e.currentTarget;
+    if (scrollWidth > clientWidth) {
+      setScrollProgress(scrollLeft / (scrollWidth - clientWidth));
+    } else {
+      setScrollProgress(0);
+    }
   };
 
-  const scrollToChest = (index: number) => {
+  const scrollChest = (direction: 'left' | 'right') => {
     if (carouselRef.current) {
-      const itemWidth = carouselRef.current.children[1]?.clientWidth || 150;
-      carouselRef.current.scrollTo({ left: index * (itemWidth + 12), behavior: 'smooth' }); // +12 for gap-3
+      const amount = 200;
+      carouselRef.current.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' });
     }
   };
 
@@ -149,17 +151,17 @@ export default function TransactionForm({ transactions }: { transactions: Transa
            ))}
         </div>
 
-        {/* Pagination Dots */}
-        <div className="flex justify-center gap-2 mt-2 mb-2">
-          {Array.from({ length: RUNES.length + 1 }).map((_, idx) => (
-             <button
-                key={idx}
-                type="button"
-                onClick={() => scrollToChest(idx)}
-                className={`w-2 h-2 rounded-full border border-black transition-colors ${activeChestIndex === idx ? 'bg-[#ffcc00]' : 'bg-[#5d4037]'}`}
-                aria-label={`Scroll to item ${idx + 1}`}
-             />
-          ))}
+        {/* Scroll Progress Bar */}
+        <div className="flex justify-center mt-3 mb-2">
+           <div className="w-24 h-1.5 bg-[#2b1d12] rounded-full border border-black overflow-hidden relative">
+              <div 
+                className="absolute top-0 bottom-0 bg-[#ffcc00] rounded-full transition-all duration-100 ease-out"
+                style={{
+                  left: `${scrollProgress * 70}%`, // 70% max left to allow 30% width bar
+                  width: '30%'
+                }}
+              />
+           </div>
         </div>
 
         <AnimatePresence>
