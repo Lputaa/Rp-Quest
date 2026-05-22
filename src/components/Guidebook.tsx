@@ -205,7 +205,7 @@ export default function Guidebook({ onClose }: { onClose: () => void }) {
           <li><strong>🔮 Oracle Scroll (Grafik & Statistik):</strong> Gulungan sihir yang menunjukkan ke mana saja aliran uangmu pergi bulan ini. Tab ini terdiri dari ringkasan Grafik Proporsi Kategori dan Net Worth. Pantau terus the Oracle setiap harinya!</li>
           <li><strong>📋 Guild Report (Riwayat Transaksi):</strong> Buku catatan resmi guild/serikat yang berisi daftar seluruh transaksi yang sudah dikonfirmasi. Kamu bisa memfilter catatan berdasarkan Gain (Pendapatan) atau Toll (Pengeluaran).</li>
           <li><strong>📅 Kalender Kerajaan (Royal Calendar):</strong> Tampilan kalender kuno untuk melacak aktivitas pada hari tertentu. Hari yang memiliki transaksi akan ditandai dengan warna/titik. Sangat berguna untuk melihat kapan kamu paling banyak menghamburkan uang!</li>
-          <li><strong>💰 The Vault (Peti Harta):</strong> Tempat rahasia untuk melacak keseluruhan kekayaanmu dari berbagai sumber (Runes) serta manajemen Potion (Simpanan Darurat).</li>
+          <li><strong>💰 The Vault (Peti Harta):</strong> Ruangan besi yang aman untuk menyimpan kekayaan jangka panjangmu. Gunakan the vault untuk mengatur dan mencapai berbagai misi keuangan (Target Tabungan) seperti membeli equipment baru (Laptop) atau modal bertualang (Liburan).</li>
           <li><strong>🦉 SageChat:</strong> Penasihat sihir AI yang dapat membantumu menganalisis situasi keuangan! Tanyakan tips padanya saat kesulitan.</li>
         </ul>
       ) : (
@@ -213,7 +213,7 @@ export default function Guidebook({ onClose }: { onClose: () => void }) {
           <li><strong>🔮 Oracle Scroll (Charts & Stats):</strong> A magical scroll revealing where your gold flows this month. Contains Category Proportion Charts and Net Worth. Check The Oracle daily!</li>
           <li><strong>📋 Guild Report (Transaction History):</strong> The official guild ledger listing all confirmed transactions. You can filter the records by Gain (Income) or Toll (Expenses).</li>
           <li><strong>📅 Royal Calendar:</strong> An ancient calendar view to track your transaction activities on specific days. Days with transactions will be marked. Highly useful for tracking your spending frequency!</li>
-          <li><strong>💰 The Vault (Treasure Chest):</strong> A secret place to track your total accumulated wealth from all sources (Runes) as well as managing your Potions (Emergency Funds).</li>
+          <li><strong>💰 The Vault (Treasure Chest):</strong> A secure iron vault to store your long-term wealth. Use the vault to set and achieve financial quests (Savings Targets) like buying new equipment (Laptop) or adventure funds (Vacation).</li>
           <li><strong>🦉 SageChat:</strong> A magical AI advisor that can help you with financial analysis! Ask for tips when you run into trouble.</li>
         </ul>
       )
