@@ -29,8 +29,6 @@ export default function Settings({ profile }: { profile: UserProfile }) {
 
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [generateSuccess, setGenerateSuccess] = useState(false);
-  const [generateError, setGenerateError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
     characterName:
@@ -43,6 +41,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
   const [resetting, setResetting] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -56,13 +55,6 @@ export default function Settings({ profile }: { profile: UserProfile }) {
       return () => clearTimeout(timer);
     }
   }, [success]);
-
-  useEffect(() => {
-    if (generateSuccess) {
-      const timer = setTimeout(() => setGenerateSuccess(false), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [generateSuccess]);
 
   useEffect(() => {
     if (resetSuccess) {
@@ -96,208 +88,6 @@ export default function Settings({ profile }: { profile: UserProfile }) {
       );
     } finally {
       setLoading(false);
-    }
-  };
-
-  const generateDummyData = async () => {
-    if (!auth.currentUser) return;
-
-    setGenerating(true);
-    setGenerateSuccess(false);
-    setGenerateError(null);
-    try {
-      const batch = writeBatch(db);
-      const txRef = collection(
-        db,
-        "users",
-        auth.currentUser.uid,
-        "transactions",
-      );
-
-      const today = new Date();
-
-      // Vault (High Net Worth) - Large initial gains
-      batch.set(doc(txRef), {
-        type: "Gain",
-        amount: 25000000,
-        category: "🎲 Loot Drop",
-        rune: "🏦 Other Bank",
-        timestamp: Timestamp.fromDate(subDays(today, 30)),
-      });
-
-      batch.set(doc(txRef), {
-        type: "Gain",
-        amount: 10000000,
-        category: "🤝 Tribute",
-        rune: "🏦 Other Bank",
-        timestamp: Timestamp.fromDate(subDays(today, 25)),
-      });
-
-      batch.set(doc(txRef), {
-        type: "Gain",
-        amount: 5000000,
-        category: "⚗️ Alchemy",
-        rune: "🌊 SeaBank",
-        timestamp: Timestamp.fromDate(subDays(today, 20)),
-      });
-
-      batch.set(doc(txRef), {
-        type: "Gain",
-        amount: 2000000,
-        category: "📜 Quest Reward",
-        rune: "💙 DANA",
-        timestamp: Timestamp.fromDate(subDays(today, 15)),
-      });
-
-      // Recent Salary
-      batch.set(doc(txRef), {
-        type: "Gain",
-        amount: profile.monthlyIncome || 8000000,
-        category: "🏰 Royal Salary",
-        rune: "🏦 Other Bank",
-        timestamp: Timestamp.fromDate(subDays(today, 2)),
-      });
-
-      // Diverse Expenses (History)
-      for (let i = 0; i <= 30; i++) {
-        const d = subDays(today, i);
-
-        // Daily Food (Tavern Feast)
-        batch.set(doc(txRef), {
-          type: "Expense",
-          amount: 30000 + Math.floor(Math.random() * 40000),
-          category: "🍖 Tavern Feast",
-          rune: "🟢 GoPay",
-          timestamp: Timestamp.fromDate(d),
-        });
-
-        // Transport (every 3 days)
-        if (i % 3 === 0) {
-          batch.set(doc(txRef), {
-            type: "Expense",
-            amount: 15000 + Math.floor(Math.random() * 20000),
-            category: "🐴 Stable & Carriage",
-            rune: "🟢 GoPay",
-            timestamp: Timestamp.fromDate(d),
-          });
-        }
-
-        // Random Quests/Loot
-        if (i % 7 === 0) {
-          batch.set(doc(txRef), {
-            type: "Gain",
-            amount: 100000 + Math.floor(Math.random() * 400000),
-            category: "🎲 Loot Drop",
-            rune: i % 2 === 0 ? "💙 DANA" : "🪙 Gold",
-            timestamp: Timestamp.fromDate(d),
-          });
-        }
-      }
-
-      // Potions (Alchemist - Well stocked)
-      batch.set(doc(txRef), {
-        type: "PotionBuy",
-        amount: 25, // 25 potions in stash
-        category: "🧪 Emergency Potion",
-        rune: "🪙 Gold",
-        timestamp: Timestamp.fromDate(subDays(today, 10)),
-      });
-
-      batch.set(doc(txRef), {
-        type: "PotionDrink",
-        amount: 3,
-        category: "🧪 Emergency Potion",
-        rune: "🪙 Gold",
-        timestamp: Timestamp.fromDate(subDays(today, 5)),
-      });
-
-      // --- Add Scheduled Events (Calendar) ---
-      const scheduledRef = collection(
-        db,
-        "users",
-        auth.currentUser.uid,
-        "scheduledEvents",
-      );
-
-      batch.set(doc(scheduledRef), {
-        type: "Bounty",
-        name: "🏰 Royal Salary",
-        amount: profile.monthlyIncome || 8000000,
-        frequency: "monthly",
-        frequencyValue: 25,
-        rune: "🏦 Other Bank",
-        category: "🏰 Royal Salary",
-        autoLog: true,
-        nextDueDate: Timestamp.fromDate(new Date()),
-        createdAt: serverTimestamp(),
-      });
-
-      batch.set(doc(scheduledRef), {
-        type: "Bounty",
-        name: "🧪 Potion Stash Subsidy",
-        amount: 5,
-        frequency: "weekly",
-        frequencyValue: 1, // Monday
-        rune: "🪙 Gold",
-        category: "⚗️ Alchemy",
-        autoLog: true,
-        nextDueDate: Timestamp.fromDate(new Date()),
-        createdAt: serverTimestamp(),
-      });
-
-      batch.set(doc(scheduledRef), {
-        type: "Toll",
-        name: "🏰 Internet Connection",
-        amount: 350000,
-        category: "🏡 Castle Upkeep",
-        frequency: "monthly",
-        frequencyValue: 5,
-        rune: "🏦 Other Bank",
-        autoLog: true,
-        nextDueDate: Timestamp.fromDate(new Date()),
-        createdAt: serverTimestamp(),
-      });
-
-      batch.set(doc(scheduledRef), {
-        type: "Toll",
-        name: "📜 Streaming Subscription",
-        amount: 55000,
-        category: "🎭 Tavern Entertainment",
-        frequency: "monthly",
-        frequencyValue: 15,
-        rune: "💙 DANA",
-        autoLog: true,
-        nextDueDate: Timestamp.fromDate(new Date()),
-        createdAt: serverTimestamp(),
-      });
-
-      batch.set(doc(scheduledRef), {
-        type: "Toll",
-        name: "🏋️ Guild Membership",
-        amount: 250000,
-        category: "⚔️ Armory",
-        frequency: "monthly",
-        frequencyValue: 1,
-        rune: "🏦 Other Bank",
-        autoLog: false,
-        nextDueDate: Timestamp.fromDate(new Date()),
-        createdAt: serverTimestamp(),
-      });
-
-      await batch.commit();
-      setGenerateSuccess(true);
-    } catch (e: any) {
-      console.error(e);
-      setGenerateError(e.message || String(e));
-      try {
-        handleFirestoreError(
-          e,
-          OperationType.CREATE,
-          `users/${auth.currentUser.uid}/transactions`,
-        );
-      } catch (_) {}
-    } finally {
-      setGenerating(false);
     }
   };
 
@@ -656,38 +446,43 @@ export default function Settings({ profile }: { profile: UserProfile }) {
       </form>
 
       <div className="mt-12 pt-8 border-t-2 border-dashed border-[#d7ccc8]">
-        <h3 className="font-sans font-bold uppercase text-xs text-amber-900 mb-2">
-          Dev Tools (Oracle Magic)
+        <h3 className="font-sans font-bold uppercase text-xs text-red-900 mb-2">
+          Danger Zone
         </h3>
         <div className="flex flex-col gap-2">
           <button
-            onClick={generateDummyData}
-            disabled={generating || resetting}
-            className="w-full py-2 bg-amber-900 hover:bg-amber-800 text-white border-4 border-black font-bold text-xs tracking-wider uppercase shadow-[2px_2px_0_0_#000] active:translate-y-1 active:shadow-none transition-all disabled:opacity-50"
-          >
-            {generating ? "Summoning..." : "Summon Dummy Data (Simulation)"}
-          </button>
-          
-          <button
-            onClick={resetData}
-            disabled={generating || resetting}
+            onClick={() => { playSFX('click'); setShowResetConfirm(true); }}
+            disabled={resetting}
             className="w-full py-2 bg-red-800 hover:bg-red-700 text-white border-4 border-black font-bold text-xs tracking-wider uppercase shadow-[2px_2px_0_0_#000] active:translate-y-1 active:shadow-none transition-all disabled:opacity-50"
           >
-            {resetting ? "Resetting..." : language === "id" ? "Reset Dummy Data" : "Reset Dummy Data"}
+            {resetting ? "Resetting..." : language === "id" ? "Reset Data" : "Reset Data"}
           </button>
         </div>
-        {generateSuccess && (
-          <div className="text-center text-amber-700 font-bold uppercase text-xs animate-pulse mt-4">
-            ✨{" "}
-            {language === "id"
-              ? "Data berhasil disuntikkan! Cek Oracle Scroll."
-              : "Dummy data injected! Check Oracle Scroll."}{" "}
-            ✨
-          </div>
-        )}
-        {generateError && (
-          <div className="text-center text-red-700 font-bold uppercase text-[10px] mt-4 border border-red-700 p-2 bg-red-100">
-            Error (Summon): {generateError}
+
+        {showResetConfirm && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setShowResetConfirm(false)}>
+            <div className="bg-[#3e2723] p-6 border-4 border-black text-[#f4e4bc] w-full max-w-sm shadow-[8px_8px_0_0_#000]" onClick={e => e.stopPropagation()}>
+              <h4 className="font-sans font-bold uppercase text-xl text-[#ffcc00] mb-4 border-b-2 border-black/30 pb-2">
+                {language === 'id' ? 'Apakah anda yakin?' : 'Are you sure?'}
+              </h4>
+              <p className="font-sans text-sm mb-6 opacity-90">
+                {language === 'id' ? 'Tindakan ini akan menghapus semua tugas dan transaksimu secara permanen.' : 'This will permanently delete all your quests and transactions.'}
+              </p>
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => setShowResetConfirm(false)}
+                  className="flex-1 py-2 bg-[#1a1a17] hover:bg-[#2b1d12] border-4 border-black text-white font-bold uppercase shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-none transition-all"
+                >
+                  {language === 'id' ? 'Batal' : 'Cancel'}
+                </button>
+                <button 
+                  onClick={() => { setShowResetConfirm(false); resetData(); }}
+                  className="flex-1 py-2 bg-red-800 hover:bg-red-700 border-4 border-black text-white font-bold uppercase shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-none transition-all"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
           </div>
         )}
         

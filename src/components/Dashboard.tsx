@@ -25,6 +25,7 @@ const GuildReport = lazy(() => import('./GuildReport'));
 const RoyalCalendar = lazy(() => import('./RoyalCalendar'));
 const Settings = lazy(() => import('./Settings'));
 const Guidebook = lazy(() => import('./Guidebook'));
+const FeedbackBox = lazy(() => import('./FeedbackBox'));
 
 function calculateNextDueDate(currentDue: Date, freq: string) {
   let next = new Date(currentDue);
@@ -55,6 +56,7 @@ export default function Dashboard() {
 
   const [activeTab, setActiveTab] = useState<'quest' | 'oracle' | 'report' | 'calendar' | 'settings'>('quest');
   const [isGuidebookOpen, setIsGuidebookOpen] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [scrollProgressWidget, setScrollProgressWidget] = useState(0);
 
   const [showStarterInput, setShowStarterInput] = useState(false);
@@ -331,12 +333,14 @@ export default function Dashboard() {
             <div className="w-full lg:flex lg:justify-center sticky top-4 z-[90]">
               <div className="relative w-full lg:w-max">
                 {canScrollLeftNav && (
-                  <button 
-                    onClick={() => scrollNav('left')} 
-                    className="absolute left-0 top-0 bottom-0 z-20 px-1 bg-gradient-to-r from-[#3e2723] via-[#3e2723] to-transparent text-[#ffcc00] flex items-center justify-start w-10 lg:hidden pointer-events-auto shadow-[-4px_0_0_0_#000_inset]"
-                  >
-                    <ChevronLeft size={20} />
-                  </button>
+                  <div className="absolute left-0 top-0 bottom-0 z-20 flex items-center justify-start pl-1 bg-gradient-to-r from-[#3e2723] from-50% to-transparent w-16 lg:hidden pointer-events-none">
+                    <button 
+                      onClick={() => { playSFX('click'); scrollNav('left'); }} 
+                      className="w-8 h-8 bg-[#ffcc00] hover:bg-white text-[#3e2723] border-2 border-black flex items-center justify-center shadow-[2px_2px_0_0_#000] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all pointer-events-auto rounded-sm"
+                    >
+                      <ChevronLeft size={20} strokeWidth={2.5} />
+                    </button>
+                  </div>
                 )}
                 <nav 
                   ref={navRef} 
@@ -373,12 +377,14 @@ export default function Dashboard() {
                   ))}
                 </nav>
                 {canScrollRightNav && (
-                  <button 
-                    onClick={() => scrollNav('right')} 
-                    className="absolute right-0 top-0 bottom-0 z-20 px-1 bg-gradient-to-l from-[#3e2723] via-[#3e2723] to-transparent text-[#ffcc00] flex items-center justify-end w-10 lg:hidden pointer-events-auto"
-                  >
-                    <ChevronRight size={20} />
-                  </button>
+                  <div className="absolute right-0 top-0 bottom-0 z-20 flex items-center justify-end pr-1 bg-gradient-to-l from-[#3e2723] from-50% to-transparent w-16 lg:hidden pointer-events-none">
+                    <button 
+                      onClick={() => { playSFX('click'); scrollNav('right'); }} 
+                      className="w-8 h-8 bg-[#ffcc00] hover:bg-white text-[#3e2723] border-2 border-black flex items-center justify-center shadow-[2px_2px_0_0_#000] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all pointer-events-auto rounded-sm"
+                    >
+                      <ChevronRight size={20} strokeWidth={2.5} />
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -386,19 +392,22 @@ export default function Dashboard() {
         )}
       </header>
 
-      {/* Floating Guidebook Button */}
-      <button 
-        onClick={() => {
-          playSFX('click');
-          setIsGuidebookOpen(true);
-        }}
-        className="fixed bottom-6 left-6 z-[100] animate-bounce bg-[#ffcc00] hover:bg-white text-[#3e2723] p-4 border-4 border-black rounded-full shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-[2px_2px_0_0_#000] transition-colors flex items-center justify-center group"
-      >
-        <span className="text-2xl drop-shadow-md">📖</span>
-        <span className="absolute left-full ml-4 whitespace-nowrap bg-black text-[#ffcc00] uppercase font-bold text-xs py-1 px-2 border-2 border-[#ffcc00] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-          {language === 'id' ? 'Panduan' : 'Guidebook'}
-        </span>
-      </button>
+      {/* Floating Buttons */}
+      <div className="fixed bottom-6 left-6 z-[100] flex flex-col gap-4">
+        {/* Floating Guidebook Button */}
+        <button 
+          onClick={() => {
+            playSFX('click');
+            setIsGuidebookOpen(true);
+          }}
+          className="animate-bounce bg-[#ffcc00] hover:bg-white text-[#3e2723] p-4 border-4 border-black rounded-full shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-[2px_2px_0_0_#000] transition-colors flex items-center justify-center group"
+        >
+          <span className="text-2xl drop-shadow-md">📖</span>
+          <span className="absolute left-full ml-4 whitespace-nowrap bg-black text-[#ffcc00] uppercase font-bold text-xs py-1 px-2 border-2 border-[#ffcc00] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            {language === 'id' ? 'Panduan' : 'Guidebook'}
+          </span>
+        </button>
+      </div>
       
       {isNewAccount ? (
         <div className="flex-1 flex flex-col items-center justify-center p-6 border-4 border-black bg-[#1a1a17] text-white shadow-[8px_8px_0_0_#000] text-center my-8 mx-auto w-full max-w-2xl">
@@ -540,12 +549,20 @@ export default function Dashboard() {
         </Suspense>
       )}
 
+      {isFeedbackOpen && (
+        <Suspense fallback={null}>
+          <FeedbackBox onClose={() => setIsFeedbackOpen(false)} />
+        </Suspense>
+      )}
+
       <footer className="mt-auto py-6 border-t-4 border-[#3d251e] flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div className="flex gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-[#aed581]">✨</span>
-            <span className="font-sans text-xs uppercase text-gray-400">EXP: <span className="text-white">Active</span></span>
-          </div>
+        <div className="flex gap-4 items-center">
+          <button 
+            onClick={() => { playSFX('click'); setIsFeedbackOpen(true); }}
+            className="flex items-center gap-1.5 font-sans font-bold text-xs uppercase text-[#ffcc00] hover:text-white transition-colors"
+          >
+            <span>🦉</span> {language === 'id' ? 'Saran' : 'Feedback'}
+          </button>
         </div>
         <div className="font-sans text-[10px] uppercase opacity-40 text-gray-400">
           #JuaraVibeCoding2026 • Code Less, Build More

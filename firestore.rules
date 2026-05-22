@@ -71,6 +71,16 @@ service cloud.firestore {
              (!('lastLoggedAt' in data) || data.lastLoggedAt is timestamp);
     }
 
+    match /feedbacks/{feedbackId} {
+      allow create: if isSignedIn() &&
+                    isValidId(feedbackId) &&
+                    incoming().keys().hasAll(['uid', 'message', 'rating', 'timestamp']) &&
+                    incoming().uid == request.auth.uid &&
+                    incoming().message is string && incoming().message.size() > 0 && incoming().message.size() <= 4000 &&
+                    incoming().rating is number && incoming().rating >= 0 && incoming().rating <= 5 &&
+                    incoming().timestamp == request.time;
+    }
+
     match /users/{userId} {
       allow get: if isSignedIn() && request.auth.uid == userId && isValidId(userId);
       allow create: if isSignedIn() && request.auth.uid == userId && isValidId(userId) && isValidUser(incoming());
