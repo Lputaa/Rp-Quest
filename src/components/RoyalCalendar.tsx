@@ -118,6 +118,11 @@ export default function RoyalCalendar({ scheduledEvents }: RoyalCalendarProps) {
         <div>
            <label htmlFor="formAmount" className="block text-xs uppercase mb-1 text-gray-400">Amount</label>
            <input id="formAmount" required type="number" inputMode="numeric" pattern="[0-9]*" value={formAmount} onChange={e => setFormAmount(e.target.value)} className="w-full bg-[#3e2723] border-2 border-black p-2 text-white outline-none focus:border-[#ffcc00]" />
+           {formAmount && !isNaN(Number(formAmount)) && (
+             <p className="mt-1 text-[#ffcc00] font-sans text-xs font-bold tracking-widest text-right">
+               Rp {Number(formAmount).toLocaleString('id-ID')}
+             </p>
+           )}
         </div>
         {formType === 'Toll' && (
           <div>

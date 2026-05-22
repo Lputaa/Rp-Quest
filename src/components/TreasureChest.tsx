@@ -125,6 +125,11 @@ export default function TreasureChest({ transactions }: { transactions: Transact
                     ))}
                   </select>
                 </div>
+                {potionAmount && !isNaN(Number(potionAmount)) && (
+                   <p className="text-[#ffcc00] font-sans text-xs font-bold tracking-widest text-left">
+                     Rp {Number(potionAmount).toLocaleString('id-ID')}
+                   </p>
+                )}
                 <button
                   disabled={loading}
                   type="submit"

@@ -60,16 +60,29 @@ export default function MainQuest({ profile }: { profile: UserProfile }) {
     const uid = auth.currentUser.uid;
     
     try {
-      const updatedQuests = vaultQuests.map(q => {
+      let completedQuest: any = null;
+      let updatedQuests = vaultQuests.map(q => {
         if (q.id === questId) {
-          return { ...q, progress: (q.progress || 0) + amount };
+          const newProgress = (q.progress || 0) + amount;
+          const updated = { ...q, progress: newProgress };
+          if (newProgress >= q.target) {
+            completedQuest = updated;
+          }
+          return updated;
         }
         return q;
       });
 
+      let completedQuestsToSave = profile.completedVaultQuests || [];
+      if (completedQuest) {
+        updatedQuests = updatedQuests.filter(q => q.id !== questId);
+        completedQuestsToSave = [...completedQuestsToSave, completedQuest];
+      }
+
       // 1. Update quests
       await updateDoc(doc(db, 'users', uid), {
         vaultQuests: updatedQuests,
+        ...(completedQuest ? { completedVaultQuests: completedQuestsToSave } : {}),
         updatedAt: serverTimestamp()
       });
 
@@ -145,6 +158,11 @@ export default function MainQuest({ profile }: { profile: UserProfile }) {
                   {addLoading ? '...' : (language === 'id' ? 'Buat' : 'Create')}
                 </button>
               </div>
+              {newTarget && !isNaN(Number(newTarget)) && (
+                <p className="mt-1 text-[#ffcc00] font-sans text-xs font-bold tracking-widest text-left">
+                  Rp {Number(newTarget).toLocaleString('id-ID')}
+                </p>
+              )}
             </div>
           </motion.div>
         )}
@@ -211,6 +229,11 @@ export default function MainQuest({ profile }: { profile: UserProfile }) {
                         {loadingId === quest.id ? '...' : (language === 'id' ? 'Simpan' : 'Stash')}
                       </button>
                     </div>
+                    {depositAmounts[quest.id] && !isNaN(Number(depositAmounts[quest.id])) && (
+                      <p className="mt-1 text-[#ffcc00] font-sans text-xs font-bold tracking-widest text-left">
+                        Rp {Number(depositAmounts[quest.id]).toLocaleString('id-ID')}
+                      </p>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>

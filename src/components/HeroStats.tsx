@@ -111,7 +111,7 @@ export default function HeroStats({ transactions, profile }: { transactions: Tra
     <div>
       <div className="flex items-center gap-2 md:gap-3 mb-1">
         <h1 className="font-display text-2xl md:text-3xl lg:text-4xl font-bold uppercase tracking-tighter text-[#ffcc00] leading-normal drop-shadow-[4px_4px_0_#000]">
-          {profile.gender === 'Madam' ? 'Lady' : 'Sir'} {stats.charName}
+          {profile.gender || 'Sir'} {stats.charName}
         </h1>
         <button 
           onClick={toggleMusic} 

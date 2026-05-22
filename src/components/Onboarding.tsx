@@ -18,7 +18,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
 
   const [characterName, setCharacterName] = useState('');
   const [avatar, setAvatar] = useState(AVATARS[0]);
-  const [gender, setGender] = useState<'Sir' | 'Madam'>('Sir');
+  const [gender, setGender] = useState<string>('Sir');
   const [income, setIncome] = useState('');
   const [rune, setRune] = useState('');
   const [agreed, setAgreed] = useState(false);
@@ -33,7 +33,8 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
     const randomAvatar = AVATARS[Math.floor(Math.random() * AVATARS.length)];
     const randomFirstName = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
     const randomLastName = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
-    const randomGender = Math.random() > 0.5 ? 'Sir' : 'Madam';
+    const TITLES = ['Sir', 'Madam', 'Lady', 'Lord', 'Master', 'Knight', 'Mage', 'King', 'Queen'];
+    const randomGender = TITLES[Math.floor(Math.random() * TITLES.length)];
     
     setCharacterName(`${randomFirstName} ${randomLastName}`);
     setAvatar(randomAvatar);
@@ -110,23 +111,23 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                   />
                 </div>
                 <div>
-                  <label className="block font-sans text-xs uppercase tracking-widest font-bold text-[#f4e4bc] mb-1">Gender</label>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setGender('Sir')}
-                      className={`flex-1 py-1 px-2 border-2 text-xs font-sans font-bold uppercase transition-colors ${gender === 'Sir' ? 'border-[#ffcc00] bg-[#ffcc00] text-[#3e2723]' : 'border-[#5a5a5a] text-[#f4e4bc] hover:border-[#f4e4bc]'}`}
-                    >
-                      Sir
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setGender('Madam')}
-                      className={`flex-1 py-1 px-2 border-2 text-xs font-sans font-bold uppercase transition-colors ${gender === 'Madam' ? 'border-[#ffcc00] bg-[#ffcc00] text-[#3e2723]' : 'border-[#5a5a5a] text-[#f4e4bc] hover:border-[#f4e4bc]'}`}
-                    >
-                      Madam
-                    </button>
-                  </div>
+                  <label htmlFor="gender" className="block font-sans text-xs uppercase tracking-widest font-bold text-[#f4e4bc] mb-1">{language === 'id' ? 'Gelar' : 'Title'}</label>
+                  <select
+                    id="gender"
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    className="w-full bg-[#2c1b18] border-2 border-black p-2 font-sans text-white focus:outline-none focus:border-[#ffcc00] uppercase text-xs font-bold"
+                  >
+                    <option value="Sir">Sir</option>
+                    <option value="Madam">Madam</option>
+                    <option value="Lady">Lady</option>
+                    <option value="Lord">Lord</option>
+                    <option value="Master">Master</option>
+                    <option value="Knight">Knight</option>
+                    <option value="Mage">Mage</option>
+                    <option value="King">King</option>
+                    <option value="Queen">Queen</option>
+                  </select>
                 </div>
               </div>
               
@@ -175,6 +176,11 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                 aria-label="Initial Wealth Amount"
               />
             </div>
+            {income && !isNaN(Number(income)) && (
+               <p className="mt-1 text-[#ffcc00] font-sans text-xs font-bold tracking-widest text-right">
+                 Rp {Number(income).toLocaleString('id-ID')}
+               </p>
+            )}
           </div>
 
           <div className="flex items-start gap-3 mt-4 p-2">

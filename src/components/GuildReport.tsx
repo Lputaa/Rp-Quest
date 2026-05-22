@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Transaction, UserProfile } from '../types';
 import { useAppStore } from '../store';
 import { format, subMonths, isSameMonth } from 'date-fns';
+import { id } from 'date-fns/locale';
 
 export default function GuildReport({ transactions, profile }: { transactions: Transaction[], profile: UserProfile }) {
   const language = useAppStore(state => state.language);
@@ -51,7 +52,7 @@ export default function GuildReport({ transactions, profile }: { transactions: T
         {language === 'id' ? 'Rapor Misi Bulanan' : 'Guild Report'}
       </h2>
       <p className="text-center font-sans text-xs md:text-sm text-[#f4e4bc] italic mb-8">
-        {format(today, 'MMMM yyyy')}
+        {format(today, 'MMMM yyyy', { locale: language === 'id' ? id : undefined })}
       </p>
 
       {!opened ? (
@@ -105,10 +106,31 @@ export default function GuildReport({ transactions, profile }: { transactions: T
              </div>
            </div>
 
+           {profile.completedVaultQuests && profile.completedVaultQuests.length > 0 && (
+             <div className="mt-8 border-t-2 border-[#5d4037] pt-6">
+                <h3 className="font-display text-xl md:text-2xl uppercase text-[#ffcc00] text-center mb-4 tracking-tighter" style={{ textShadow: "1px 1px 0px #000" }}>
+                  {language === 'id' ? 'The Vault: Terselesaikan' : 'The Vault: Completed'}
+                </h3>
+                <div className="flex flex-col gap-3">
+                  {profile.completedVaultQuests.map((q, idx) => (
+                    <div key={idx} className="bg-[#2d1b15] border-2 border-[#ffcc00] p-3 flex justify-between items-center shadow-[4px_4px_0_0_#ffcc00]">
+                       <div>
+                         <p className="font-sans font-bold text-sm text-[#ffcc00] uppercase tracking-wider">{q.name}</p>
+                         <p className="font-sans text-xs text-gray-400 mt-1">Target: Rp {q.target.toLocaleString('id-ID')}</p>
+                       </div>
+                       <div className="text-2xl drop-shadow-[2px_2px_0px_#000]">
+                         🏆
+                       </div>
+                    </div>
+                  ))}
+                </div>
+             </div>
+           )}
+
            <div className="mt-8 bg-[#3e2723] p-4 border-2 border-black">
               <p className="font-sans text-sm italic text-center">
-                {savedCurrent > savedLast 
-                  ? (language === 'id' ? '"Bagus sekali, Tuan! Petualanganmu membawa berkah luar biasa."' : '"Excellent work! Your adventures have brought great fortune."')
+                {savedCurrent >= savedLast 
+                  ? (language === 'id' ? `"Bagus sekali, ${profile.gender || 'Sir'}! Petualanganmu membawa berkah luar biasa."` : `"Excellent work, ${profile.gender || 'Sir'}! Your adventures have brought great fortune."`)
                   : (language === 'id' ? '"Sebuah kemunduran... Jangan biarkan bayangan mengambil hartamu lagi."' : '"A setback... Do not let the shadows claim your wealth again."')
                 }
               </p>

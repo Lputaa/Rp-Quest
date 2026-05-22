@@ -3,12 +3,13 @@ import { Timestamp } from 'firebase/firestore';
 export interface UserProfile {
   characterName?: string;
   avatar?: string;
-  gender?: 'Sir' | 'Madam';
+  gender?: string;
   customHPCap?: number;
   monthlyIncome: number;
   targetDailyExpense?: number;
   targetSavings?: number; // legacy
   vaultQuests?: VaultQuest[];
+  completedVaultQuests?: VaultQuest[];
   mainQuestName?: string; // legacy
   mainQuestTarget?: number; // legacy
   mainQuestProgress?: number; // legacy
@@ -58,7 +59,7 @@ export const EXPENSE_CATEGORIES = [
 
 export const RUNES = [
   { id: '🪙 Gold', name: 'Gold', icon: '🪙' },
-  { id: '🛍️ ShopeePay', name: 'ShopeePay', icon: '🛍️' },
+  { id: '🟢 GoPay', name: 'GoPay', icon: '🟢' },
   { id: '💙 DANA', name: 'DANA', icon: '💙' },
   { id: '🌊 SeaBank', name: 'SeaBank', icon: '🌊' },
   { id: '🏦 Other Bank', name: 'Other Bank', icon: '🏦' },

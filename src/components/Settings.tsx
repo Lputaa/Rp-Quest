@@ -31,6 +31,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
     characterName:
       profile.characterName || auth.currentUser?.displayName || "Traveler",
     avatar: profile.avatar || "🧑‍🌾",
+    gender: profile.gender || "Sir",
     customHPCap: profile.customHPCap?.toString() || "100000",
   });
 
@@ -76,6 +77,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
       await updateDoc(pDoc, {
         characterName: formData.characterName,
         avatar: formData.avatar,
+        gender: formData.gender,
         customHPCap: Number(formData.customHPCap),
         updatedAt: serverTimestamp(),
       });
@@ -159,7 +161,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
           type: "Expense",
           amount: 30000 + Math.floor(Math.random() * 40000),
           category: "🍖 Tavern Feast",
-          rune: "🛍️ ShopeePay",
+          rune: "🟢 GoPay",
           timestamp: Timestamp.fromDate(d),
         });
 
@@ -169,7 +171,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
             type: "Expense",
             amount: 15000 + Math.floor(Math.random() * 20000),
             category: "🐴 Stable & Carriage",
-            rune: "🛍️ ShopeePay",
+            rune: "🟢 GoPay",
             timestamp: Timestamp.fromDate(d),
           });
         }
@@ -525,23 +527,51 @@ export default function Settings({ profile }: { profile: UserProfile }) {
           </div>
         </div>
 
-        <div>
-          <label
-            htmlFor="charNameSetting"
-            className="block font-sans text-sm md:text-base uppercase font-bold tracking-widest text-[#3e2723] mb-2"
-          >
-            {t.charName}
-          </label>
-          <input
-            id="charNameSetting"
-            type="text"
-            required
-            value={formData.characterName}
-            onChange={(e) =>
-              setFormData({ ...formData, characterName: e.target.value })
-            }
-            className="w-full bg-white border-4 border-[#3e2723] p-3 font-sans text-lg text-[#3e2723] focus:outline-none focus:border-[#ffcc00] shadow-[inset_4px_4px_0_rgba(0,0,0,0.1)]"
-          />
+        <div className="flex gap-4">
+          <div className="w-1/3">
+            <label
+              htmlFor="genderSetting"
+              className="block font-sans text-sm md:text-base uppercase font-bold tracking-widest text-[#3e2723] mb-2"
+            >
+              {language === 'id' ? 'Gelar' : 'Title'}
+            </label>
+            <select
+              id="genderSetting"
+              value={formData.gender}
+              onChange={(e) =>
+                setFormData({ ...formData, gender: e.target.value })
+              }
+              className="w-full bg-white border-4 border-[#3e2723] p-3 font-sans text-lg text-[#3e2723] focus:outline-none focus:border-[#ffcc00] shadow-[inset_4px_4px_0_rgba(0,0,0,0.1)] uppercase font-bold"
+            >
+              <option value="Sir">Sir</option>
+              <option value="Madam">Madam</option>
+              <option value="Lady">Lady</option>
+              <option value="Lord">Lord</option>
+              <option value="Master">Master</option>
+              <option value="Knight">Knight</option>
+              <option value="Mage">Mage</option>
+              <option value="King">King</option>
+              <option value="Queen">Queen</option>
+            </select>
+          </div>
+          <div className="flex-1">
+            <label
+              htmlFor="charNameSetting"
+              className="block font-sans text-sm md:text-base uppercase font-bold tracking-widest text-[#3e2723] mb-2"
+            >
+              {t.charName}
+            </label>
+            <input
+              id="charNameSetting"
+              type="text"
+              required
+              value={formData.characterName}
+              onChange={(e) =>
+                setFormData({ ...formData, characterName: e.target.value })
+              }
+              className="w-full bg-white border-4 border-[#3e2723] p-3 font-sans text-lg text-[#3e2723] focus:outline-none focus:border-[#ffcc00] shadow-[inset_4px_4px_0_rgba(0,0,0,0.1)]"
+            />
+          </div>
         </div>
 
         <div>
@@ -567,6 +597,11 @@ export default function Settings({ profile }: { profile: UserProfile }) {
             }
             className="w-full bg-white border-4 border-[#3e2723] p-3 font-sans text-lg text-[#3e2723] focus:outline-none focus:border-[#ffcc00] shadow-[inset_4px_4px_0_rgba(0,0,0,0.1)]"
           />
+          {formData.customHPCap && !isNaN(Number(formData.customHPCap)) && (
+            <p className="mt-1 text-amber-700 font-sans text-xs font-bold tracking-widest text-right">
+              Rp {Number(formData.customHPCap).toLocaleString('id-ID')}
+            </p>
+          )}
         </div>
 
         <button

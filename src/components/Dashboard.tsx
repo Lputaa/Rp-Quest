@@ -12,6 +12,7 @@ import HeroStats from './HeroStats';
 import { isSameDay, addDays, addMonths } from 'date-fns';
 
 import MainQuest from './MainQuest';
+import TreasureChest from './TreasureChest';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -51,8 +52,9 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [decrees, setDecrees] = useState<ScheduledEvent[]>([]);
 
-  const [activeTab, setActiveTab] = useState<'quest' | 'oracle' | 'report' | 'calendar' | 'settings' | 'guidebook'>('quest');
-  const [activeWidgetIndex, setActiveWidgetIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState<'quest' | 'oracle' | 'report' | 'calendar' | 'settings'>('quest');
+  const [isGuidebookOpen, setIsGuidebookOpen] = useState(false);
+  const [scrollProgressWidget, setScrollProgressWidget] = useState(0);
 
   const [showStarterInput, setShowStarterInput] = useState(false);
   const [starterTarget, setStarterTarget] = useState('');
@@ -98,18 +100,13 @@ export default function Dashboard() {
   }, []);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const scrollLeft = e.currentTarget.scrollLeft;
-    // Assuming each widget is approx 85vw or 350px width plus margin
-    const width = e.currentTarget.children[0]?.clientWidth || 300;
-    const index = Math.round(scrollLeft / width);
-    setActiveWidgetIndex(index);
-  };
-
-  const scrollToWidget = (index: number) => {
-    if (carouselRef.current) {
-      const width = carouselRef.current.children[0]?.clientWidth || 300;
-      // scroll with gap adjustment
-      carouselRef.current.scrollTo({ left: index * (width + 16), behavior: 'smooth' });
+    const { scrollLeft, scrollWidth, clientWidth } = e.currentTarget;
+    if (scrollWidth > clientWidth) {
+      let progress = scrollLeft / (scrollWidth - clientWidth);
+      if (progress > 0.95) progress = 1; // Snap to 100% when very close
+      setScrollProgressWidget(progress);
+    } else {
+      setScrollProgressWidget(0);
     }
   };
 
@@ -246,15 +243,22 @@ export default function Dashboard() {
   
   let currentHP = maxHP;
   let isHealing = false;
-  todayTransactions.forEach(tItem => {
+  
+  // Sort today's transactions from oldest to newest to replay chronological events
+  const chronologicalToday = [...todayTransactions].sort((a, b) => {
+    if (!a.timestamp || !b.timestamp) return 0;
+    return a.timestamp.toMillis() - b.timestamp.toMillis();
+  });
+
+  chronologicalToday.forEach(tItem => {
     if (tItem.type === 'Expense') {
       currentHP -= tItem.amount;
     } else if (tItem.type === 'Gain') {
       // Heal mechanic: max +50% of maxHP per day
-      currentHP += Math.min(tItem.amount, maxHP * 0.5);
+      currentHP = Math.min(currentHP + Math.min(tItem.amount, maxHP * 0.5), maxHP);
       if (tItem.isPending) isHealing = true;
     } else if (tItem.type === 'PotionDrink') {
-      currentHP += tItem.amount; // Directly heals HP
+      currentHP = Math.min(currentHP + tItem.amount, maxHP); // Directly heals HP
       if (tItem.isPending) isHealing = true;
     }
     // PotionBuy does not affect HP
@@ -340,10 +344,9 @@ export default function Dashboard() {
                   {[
                     { id: 'quest', label: t.navQuest || 'Quest' },
                     { id: 'oracle', label: t.navOracle || 'Oracle' },
-                    { id: 'report', label: language === 'id' ? 'Guild Report' : 'Guild Report' },
+                    { id: 'report', label: language === 'id' ? 'Rapor Misi' : 'Guild Report' },
                     { id: 'calendar', label: t.navCalendar || 'Calendar' },
-                    { id: 'settings', label: t.navSettings || 'Settings' },
-                    { id: 'guidebook', label: language === 'id' ? 'Panduan' : 'Guidebook' }
+                    { id: 'settings', label: t.navSettings || 'Settings' }
                   ].map((tab) => (
                     <motion.button
                       key={tab.id}
@@ -377,25 +380,40 @@ export default function Dashboard() {
           </div>
         )}
       </header>
+
+      {/* Floating Guidebook Button */}
+      <button 
+        onClick={() => setIsGuidebookOpen(true)}
+        className="fixed bottom-6 left-6 z-[100] animate-bounce bg-[#ffcc00] hover:bg-white text-[#3e2723] p-4 border-4 border-black rounded-full shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-[2px_2px_0_0_#000] transition-colors flex items-center justify-center group"
+      >
+        <span className="text-2xl drop-shadow-md">📖</span>
+        <span className="absolute left-full ml-4 whitespace-nowrap bg-black text-[#ffcc00] uppercase font-bold text-xs py-1 px-2 border-2 border-[#ffcc00] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+          {language === 'id' ? 'Panduan' : 'Guidebook'}
+        </span>
+      </button>
       
       {isNewAccount ? (
         <div className="flex-1 flex flex-col items-center justify-center p-6 border-4 border-black bg-[#1a1a17] text-white shadow-[8px_8px_0_0_#000] text-center my-8 mx-auto w-full max-w-2xl">
           {!showStarterInput ? (
             <>
-              <h2 className="font-display text-3xl md:text-4xl mb-4 text-[#ffcc00] uppercase">Mulai Petualanganmu!</h2>
+              <h2 className="font-display text-xl sm:text-2xl md:text-4xl mb-4 text-[#ffcc00] uppercase break-words">{language === 'id' ? 'Mulai Petualanganmu!' : 'Start Your Adventure!'}</h2>
               <p className="font-sans text-[#f4e4bc] mb-8 max-w-md leading-relaxed">
-                Sebelum memulai misi, tentukan terlebih dahulu target pengeluaran harian maksimalmu. Ini akan menjadi batas <strong className="text-red-500">HP-mu</strong> dalam bertahan hidup di dunia nyata!
+                {language === 'id' ? (
+                  <>Sebelum memulai misi, tentukan terlebih dahulu target pengeluaran harian maksimalmu. Ini akan menjadi batas <strong className="text-red-500">HP-mu</strong> dalam bertahan hidup di dunia nyata!</>
+                ) : (
+                  <>Before starting your mission, define your maximum daily expense target. This will act as your <strong className="text-red-500">HP</strong> limit for surviving the real world!</>
+                )}
               </p>
               <button 
                 onClick={() => setShowStarterInput(true)}
                 className="px-8 py-4 bg-[#ffcc00] border-4 border-black font-bold uppercase text-black text-xl hover:-translate-y-1 shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-none transition-all"
               >
-                🗡️ Mulai!
+                {language === 'id' ? '🗡️ Mulai!' : '🗡️ Start!'}
               </button>
             </>
           ) : (
             <form onSubmit={handleStartAdventure} className="w-full max-w-sm flex flex-col gap-4 mx-auto animate-in fade-in slide-in-from-bottom-4">
-               <label htmlFor="starterTarget" className="font-sans font-bold text-[#f4e4bc] mb-1 uppercase tracking-widest text-sm text-left">Target Pengeluaran Harian (Max HP)</label>
+               <label htmlFor="starterTarget" className="font-sans font-bold text-[#f4e4bc] mb-1 uppercase tracking-widest text-sm text-left">{language === 'id' ? 'Target Pengeluaran Harian (Max HP)' : 'Daily Expense Target (Max HP)'}</label>
                <input 
                  id="starterTarget"
                  type="number"
@@ -405,14 +423,19 @@ export default function Dashboard() {
                  value={starterTarget}
                  onChange={e => setStarterTarget(e.target.value)}
                  className="w-full bg-[#3e2723] border-4 border-black border-l-[#ffcc00] p-4 text-white font-sans text-xl outline-none focus:bg-black transition-colors shadow-[inset_4px_4px_0_rgba(0,0,0,0.5)]"
-                 placeholder="Contoh: 150000"
+                 placeholder={language === 'id' ? 'Contoh: 150000' : 'E.g., 150000'}
                  autoFocus
                />
+               {starterTarget && !isNaN(Number(starterTarget)) && (
+                 <p className="text-[#ffcc00] font-sans text-xs font-bold tracking-widest text-right -mt-2">
+                   Rp {Number(starterTarget).toLocaleString('id-ID')}
+                 </p>
+               )}
                <button 
                 type="submit"
                 className="w-full py-4 bg-[#ffcc00] border-4 border-black font-bold uppercase text-black text-lg hover:-translate-y-1 shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-none transition-all"
                >
-                 Tetapkan HP
+                 {language === 'id' ? 'Tetapkan HP' : 'Set HP'}
                </button>
             </form>
           )}
@@ -427,30 +450,31 @@ export default function Dashboard() {
             <div 
               ref={carouselRef}
               onScroll={handleScroll}
-              className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 px-4" 
+              className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 pl-4 pr-16" 
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
                <style>{`.hide-scroll::-webkit-scrollbar { display: none; }`}</style>
-               <div className="w-[85vw] sm:w-[350px] flex-shrink-0 snap-center hide-scroll">
+               <div className="w-[85vw] sm:w-[350px] flex-shrink-0 snap-start hide-scroll">
                  {profile && <MainQuest profile={profile} />}
                </div>
-               <div className="w-[85vw] sm:w-[350px] flex-shrink-0 snap-center hide-scroll">
+               <div className="w-[85vw] sm:w-[350px] flex-shrink-0 snap-start hide-scroll">
                  <DailyQuests transactions={transactions} />
                </div>
-               <div className="w-[85vw] sm:w-[350px] flex-shrink-0 snap-center hide-scroll">
+               <div className="w-[85vw] sm:w-[350px] flex-shrink-0 snap-start hide-scroll">
                  <SageChat transactions={transactions} />
                </div>
             </div>
-            {/* Pagination Dots */}
-            <div className="flex justify-center gap-2 mt-1 mb-4">
-              {[0, 1, 2].map((idx) => (
-                <button
-                  key={idx}
-                  onClick={() => scrollToWidget(idx)}
-                  className={`w-3 h-3 rounded-full border-2 border-black transition-colors ${activeWidgetIndex === idx ? 'bg-[#ffcc00]' : 'bg-[#3e2723]'}`}
-                  aria-label={`Scroll to widget ${idx + 1}`}
-                />
-              ))}
+            {/* Scroll Progress Bar */}
+            <div className="flex justify-center mt-2 mb-4">
+               <div className="w-24 h-1.5 bg-[#5d4037] rounded-full border border-black overflow-hidden relative">
+                  <div 
+                    className="absolute top-0 bottom-0 bg-[#ffcc00] rounded-full transition-all duration-100 ease-out"
+                    style={{
+                      left: `${scrollProgressWidget * 66}%`,
+                      width: '34%'
+                    }}
+                  />
+               </div>
             </div>
           </div>
 
@@ -467,6 +491,7 @@ export default function Dashboard() {
 
           {/* Desktop Right Aside */}
           <aside className="hidden lg:flex col-span-1 lg:col-span-3 flex-col gap-4 order-3">
+            <TreasureChest transactions={transactions} />
             <SageChat transactions={transactions} />
           </aside>
         </div>
@@ -495,13 +520,13 @@ export default function Dashboard() {
           <Settings profile={profile} />
         </Suspense>
       )}
-
-      {activeTab === 'guidebook' && (
-        <Suspense fallback={<div className="p-8 text-center text-[#ffcc00] animate-pulse">Opening Guidebook...</div>}>
-          <Guidebook />
-        </Suspense>
-      )}
       </>
+      )}
+
+      {isGuidebookOpen && (
+        <Suspense fallback={null}>
+          <Guidebook onClose={() => setIsGuidebookOpen(false)} />
+        </Suspense>
       )}
 
       <footer className="mt-auto py-6 border-t-4 border-[#3d251e] flex flex-col sm:flex-row justify-between items-center gap-4">

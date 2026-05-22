@@ -86,7 +86,7 @@ export default function App() {
         </button>
         <button 
           onClick={() => setShowLogoutModal(true)} 
-          className="font-sans text-xs md:text-sm text-gray-400 hover:text-white underline decoration-dashed underline-offset-4"
+          className="font-sans text-xs md:text-sm text-[#f4e4bc] hover:text-white border border-[#5d4037] hover:border-[#ef5350] hover:bg-[#ef5350] bg-[#3e2723] px-3 py-1 uppercase font-bold shadow-[2px_2px_0_0_#000] transition-colors"
         >
           {t.logout}
         </button>

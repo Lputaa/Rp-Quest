@@ -49,7 +49,9 @@ export default function TransactionForm({ transactions }: { transactions: Transa
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollLeft, scrollWidth, clientWidth } = e.currentTarget;
     if (scrollWidth > clientWidth) {
-      setScrollProgress(scrollLeft / (scrollWidth - clientWidth));
+      let progress = scrollLeft / (scrollWidth - clientWidth);
+      if (progress > 0.95) progress = 1;
+      setScrollProgress(progress);
     } else {
       setScrollProgress(0);
     }
@@ -117,19 +119,19 @@ export default function TransactionForm({ transactions }: { transactions: Transa
   return (
     <div className="bg-[#2b1d12] border-4 border-black shadow-[8px_8px_0_0_#000]">
       {/* Treasure Chest Carousel embed (Mobile Only) */}
-      <div className="lg:hidden p-4 bg-[#3e2723] border-b-4 border-black">
+      <div className="lg:hidden p-4 bg-[#3e2723] border-b-4 border-black sticky top-0 z-[80] shadow-[0_4px_0_0_rgba(0,0,0,0.5)]">
         <h2 className="text-[#ffcc00] font-sans text-xs uppercase mb-3 flex items-center gap-2">
           <span>💰</span> {t.treasureChest}
         </h2>
         <div 
           ref={carouselRef}
           onScroll={handleScroll}
-          className="flex overflow-x-auto gap-3 pb-2 snap-x snap-mandatory hide-scroll" 
+          className="flex overflow-x-auto gap-3 pb-2 snap-x snap-mandatory hide-scroll pr-8" 
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
            <style>{`.hide-scroll::-webkit-scrollbar { display: none; }`}</style>
            
-           <div className="flex-shrink-0 snap-center bg-indigo-900 border-2 border-black p-2 min-w-[200px] flex flex-col justify-between">
+           <div className="flex-shrink-0 snap-start bg-indigo-900 border-2 border-black p-2 min-w-[200px] flex flex-col justify-between">
              <div>
                <div className="text-xs uppercase text-indigo-300 font-bold mb-1 flex items-center gap-1"><span>🧪</span> Potions</div>
                <div className="text-sm font-bold text-white">Rp {potionStash.toLocaleString('id-ID')}</div>
@@ -141,7 +143,7 @@ export default function TransactionForm({ transactions }: { transactions: Transa
            </div>
 
            {RUNES.map(r => (
-             <div key={r.id} className="flex-shrink-0 snap-center bg-[#2b1d12] border-2 border-black p-2 min-w-[140px]">
+             <div key={r.id} className="flex-shrink-0 snap-start bg-[#2b1d12] border-2 border-black p-2 min-w-[140px]">
                <div className="flex items-center gap-2 mb-1">
                  <span className="text-sm">{r.icon}</span>
                  <span className="text-[10px] uppercase text-[#f4e4bc] font-bold">{r.name}</span>
@@ -185,6 +187,11 @@ export default function TransactionForm({ transactions }: { transactions: Transa
                 placeholder="Amount (Potions)"
                 className="w-full bg-[#1a1a17] border-2 border-black p-2 font-sans text-sm text-white focus:outline-none focus:border-[#ffcc00]"
               />
+              {potionAmount && !isNaN(Number(potionAmount)) && (
+                <p className="text-[#ffcc00] font-sans text-xs font-bold tracking-widest text-right">
+                  Rp {Number(potionAmount).toLocaleString('id-ID')}
+                </p>
+              )}
               <select 
                 value={potionRune} 
                 onChange={e => setPotionRune(e.target.value)}
@@ -257,6 +264,11 @@ export default function TransactionForm({ transactions }: { transactions: Transa
               className="w-full bg-[#1a1a17] border-4 border-black p-3 font-sans text-xl text-white focus:outline-none focus:border-[#ffcc00] shadow-[inset_4px_4px_0_rgba(0,0,0,0.5)]"
               placeholder="e.g. 50000"
             />
+            {amount && !isNaN(Number(amount)) && (
+               <p className="mt-1 text-[#ffcc00] font-sans text-xs font-bold tracking-widest text-right">
+                 Rp {Number(amount).toLocaleString('id-ID')}
+               </p>
+            )}
           </div>
 
           <div>

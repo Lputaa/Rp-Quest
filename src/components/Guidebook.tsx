@@ -1,7 +1,8 @@
 import React from 'react';
 import { useAppStore } from '../store';
+import { X } from 'lucide-react';
 
-export default function Guidebook() {
+export default function Guidebook({ onClose }: { onClose: () => void }) {
   const language = useAppStore(state => state.language);
   const isId = language === 'id';
 
@@ -45,13 +46,13 @@ export default function Guidebook() {
       title: isId ? 'Mekanik HP & Stamina' : 'HP & Stamina Mechanics',
       content: isId ? (
         <ul className="list-disc pl-5 space-y-2 mt-2">
-          <li><strong>Maksimum HP:</strong> Dihitung otomatis dari <em>(Gaji - Target Tabungan) / 30 Hari</em>.</li>
+          <li><strong>Maksimum HP:</strong> Berdasarkan Target Pengeluaran Harian yang kamu tentukan sendiri.</li>
           <li>Setiap kali kamu mencatat <strong className="text-red-900">Pengeluaran</strong>, HP mu berkurang sesuai jumlah nominalnya.</li>
           <li>Jika HP mencapai 0, santai, ini hanya peringatan bahwa budget harianmu telah habis. Esok hari HP akan kembali penuh (Reset Harian).</li>
         </ul>
       ) : (
         <ul className="list-disc pl-5 space-y-2 mt-2">
-          <li><strong>Max HP:</strong> Calculated automatically from <em>(Income - Target Savings) / 30 Days</em>.</li>
+          <li><strong>Max HP:</strong> Based on the Daily Expense Target you set for yourself.</li>
           <li>Every time you log an <strong className="text-red-900">Expense</strong>, your HP decreases by that exact amount.</li>
           <li>If HP hits 0, relax, it's just a warning that your daily budget is depleted. Tomorrow, your HP will be fully restored (Daily Reset).</li>
         </ul>
@@ -166,13 +167,13 @@ export default function Guidebook() {
       content: isId ? (
         <ul className="list-disc pl-5 space-y-2 mt-2">
           <li><strong>🪙 Gold:</strong> Uang tunai atau dompet fisik utama.</li>
-          <li><strong>🛍️ ShopeePay / 💙 DANA / 🌊 SeaBank / 🏦 Other Bank:</strong> Berbagai instrumen penyimpanan kekayaan digital dan rekening bank.</li>
+          <li><strong>🟢 GoPay / 💙 DANA / 🌊 SeaBank / 🏦 Other Bank:</strong> Berbagai instrumen penyimpanan kekayaan digital dan rekening bank.</li>
           <li><strong>🖤 Curse (Hutang):</strong> Kutukan! Gunakan rune ini saat kamu melakukan pengeluaran dengan paylater atau kartu kredit. Berhati-hatilah dengan kutukan agar tidak menumpuk!</li>
         </ul>
       ) : (
         <ul className="list-disc pl-5 space-y-2 mt-2">
           <li><strong>🪙 Gold:</strong> Physical cash / main physical wallet.</li>
-          <li><strong>🛍️ ShopeePay / 💙 DANA / 🌊 SeaBank / 🏦 Other Bank:</strong> Various digital wallets and bank accounts.</li>
+          <li><strong>🟢 GoPay / 💙 DANA / 🌊 SeaBank / 🏦 Other Bank:</strong> Various digital wallets and bank accounts.</li>
           <li><strong>🖤 Curse (Debt):</strong> A curse! Use this rune when spending via credit cards or paylater. Be careful not to let the curse accumulate!</li>
         </ul>
       )
@@ -243,10 +244,14 @@ export default function Guidebook() {
   ];
 
   return (
-    <div className="bg-[#f4e4bc] border-4 border-black p-4 md:p-8 shadow-[8px_8px_0_0_#000] text-[#3e2723] max-w-4xl mx-auto">
-      <h2 className="font-display text-2xl md:text-3xl lg:text-4xl mb-6 md:mb-8 uppercase text-center border-b-4 border-[#3d251e] pb-4 mx-auto w-full">
-        {isId ? '📜 Buku Panduan Petualang' : '📜 Adventurer\'s Guidebook'}
-      </h2>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={onClose}>
+      <div className="relative bg-[#f4e4bc] border-4 border-black p-4 md:p-8 shadow-[12px_12px_0_0_#000] text-[#3e2723] w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-4 right-4 text-amber-900 hover:text-red-600 hover:scale-110 transition-transform">
+          <X size={32} />
+        </button>
+        <h2 className="font-display text-2xl md:text-3xl lg:text-4xl mb-6 md:mb-8 uppercase text-center border-b-4 border-[#3d251e] pb-4 mx-auto w-full pr-12">
+          {isId ? '📜 Buku Panduan Petualang' : '📜 Adventurer\'s Guidebook'}
+        </h2>
 
       <div className="flex flex-col gap-8">
         {sections.map((sec, idx) => (
@@ -263,6 +268,7 @@ export default function Guidebook() {
           </div>
         ))}
       </div>
+    </div>
     </div>
   );
 }
