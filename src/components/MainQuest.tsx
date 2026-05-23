@@ -59,9 +59,9 @@ export default function MainQuest({ profile }: { profile: UserProfile }) {
     if (amount <= 0) return;
 
     setLoadingId(questId);
+    const uid = auth.currentUser.uid;
     try {
       playSFX('coin');
-      const uid = auth.currentUser.uid;
       let completedQuest: any = null;
       let updatedQuests = vaultQuests.map(q => {
         if (q.id === questId) {

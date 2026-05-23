@@ -26,6 +26,7 @@ service cloud.firestore {
              (!('mainQuestTarget' in data) || (data.mainQuestTarget is number && data.mainQuestTarget >= 0)) &&
              (!('mainQuestProgress' in data) || (data.mainQuestProgress is number && data.mainQuestProgress >= 0)) &&
              (!('vaultQuests' in data) || (data.vaultQuests is list && data.vaultQuests.size() <= 5)) &&
+             (!('completedVaultQuests' in data) || (data.completedVaultQuests is list)) &&
              data.createdAt == request.time &&
              data.updatedAt == request.time;
     }
@@ -43,6 +44,7 @@ service cloud.firestore {
              (!('mainQuestTarget' in data) || (data.mainQuestTarget is number && data.mainQuestTarget >= 0)) &&
              (!('mainQuestProgress' in data) || (data.mainQuestProgress is number && data.mainQuestProgress >= 0)) &&
              (!('vaultQuests' in data) || (data.vaultQuests is list && data.vaultQuests.size() <= 5)) &&
+             (!('completedVaultQuests' in data) || (data.completedVaultQuests is list)) &&
              data.updatedAt == request.time &&
              data.createdAt == existing().createdAt;
     }
@@ -85,13 +87,15 @@ service cloud.firestore {
       allow get: if isSignedIn() && request.auth.uid == userId && isValidId(userId);
       allow create: if isSignedIn() && request.auth.uid == userId && isValidId(userId) && isValidUser(incoming());
       allow update: if isSignedIn() && request.auth.uid == userId && isValidId(userId) && isValidUserUpdate(incoming()) && (
-        incoming().diff(existing()).affectedKeys().hasOnly(['monthlyIncome', 'targetSavings', 'targetDailyExpense', 'updatedAt', 'characterName', 'avatar', 'gender', 'customHPCap', 'mainQuestName', 'mainQuestTarget', 'mainQuestProgress', 'vaultQuests'])
+        incoming().diff(existing()).affectedKeys().hasOnly(['monthlyIncome', 'targetSavings', 'targetDailyExpense', 'updatedAt', 'characterName', 'avatar', 'gender', 'customHPCap', 'mainQuestName', 'mainQuestTarget', 'mainQuestProgress', 'vaultQuests', 'completedVaultQuests', 'badges', 'currentStreak', 'longestStreak', 'lastActivityDate'])
       );
       
       match /transactions/{transactionId} {
         allow get: if isSignedIn() && request.auth.uid == userId && isValidId(transactionId);
         allow list: if isSignedIn() && request.auth.uid == userId;
         allow create: if isSignedIn() && request.auth.uid == userId && 
+                      isValidId(transactionId) && isValidTransaction(incoming());
+        allow update: if isSignedIn() && request.auth.uid == userId &&
                       isValidId(transactionId) && isValidTransaction(incoming());
         allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(transactionId);
       }

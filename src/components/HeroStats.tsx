@@ -41,8 +41,8 @@ export default function HeroStats({ transactions, profile }: { transactions: Tra
       const dateStr = t.timestamp.toDate().toDateString();
       activeDays.add(dateStr);
 
-      if (t.type === 'Gain') monthGain += t.amount;
-      if (t.type === 'Expense') {
+      if (t.type === 'Gain' || t.type === 'PotionDrink') monthGain += t.amount;
+      if (t.type === 'Expense' || t.type === 'PotionBuy') {
         monthExpense += t.amount;
         if (t.category === '👻 Shadow Toll') {
           impulseExpense += t.amount;

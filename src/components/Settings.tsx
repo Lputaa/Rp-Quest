@@ -13,6 +13,7 @@ import {
 } from "firebase/firestore";
 import { handleFirestoreError } from "../lib/errorHandler";
 import { useAppStore } from "../store";
+import Papa from 'papaparse';
 import { translations } from "../lib/i18n";
 import { subDays } from "date-fns";
 import { playSFX } from "../audio";
@@ -159,41 +160,56 @@ export default function Settings({ profile }: { profile: UserProfile }) {
       const scheduledRef = collection(db, "users", uid, "scheduledEvents");
       const scheduledSnap = await getDocs(scheduledRef);
 
-      const transactions: any[] = [];
+      const records: any[] = [];
+      
       txSnap.forEach(doc => {
         const data = doc.data();
-        if (data.timestamp && typeof data.timestamp.toDate === 'function') {
-          data.timestamp = data.timestamp.toDate().toISOString();
-        }
-        transactions.push({ id: doc.id, ...data });
+        records.push({
+          entity_type: 'transaction',
+          type: data.type || '',
+          amount: data.amount || 0,
+          category: data.category || '',
+          rune: data.rune || '',
+          description: data.description || '',
+          timestamp: data.timestamp?.toDate ? data.timestamp.toDate().toISOString() : '',
+          
+          name: '',
+          frequency: '',
+          frequencyValue: '',
+          autoLog: '',
+          nextDueDate: '',
+          createdAt: '',
+          lastLoggedAt: ''
+        });
       });
 
-      const scheduledEvents: any[] = [];
       scheduledSnap.forEach(doc => {
         const data = doc.data();
-        if (data.nextDueDate && typeof data.nextDueDate.toDate === 'function') {
-          data.nextDueDate = data.nextDueDate.toDate().toISOString();
-        }
-        if (data.createdAt && typeof data.createdAt.toDate === 'function') {
-          data.createdAt = data.createdAt.toDate().toISOString();
-        }
-        if (data.lastLoggedAt && typeof data.lastLoggedAt.toDate === 'function') {
-          data.lastLoggedAt = data.lastLoggedAt.toDate().toISOString();
-        }
-        scheduledEvents.push({ id: doc.id, ...data });
+        records.push({
+          entity_type: 'scheduledEvent',
+          type: data.type || '',
+          amount: data.amount || 0,
+          category: data.category || '',
+          rune: data.rune || '',
+          description: '',
+          timestamp: '',
+          
+          name: data.name || '',
+          frequency: data.frequency || '',
+          frequencyValue: data.frequencyValue || '',
+          autoLog: data.autoLog === true ? 'true' : 'false',
+          nextDueDate: data.nextDueDate?.toDate ? data.nextDueDate.toDate().toISOString() : '',
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : '',
+          lastLoggedAt: data.lastLoggedAt?.toDate ? data.lastLoggedAt.toDate().toISOString() : ''
+        });
       });
 
-      const exportObj = {
-        exportDate: new Date().toISOString(),
-        transactions,
-        scheduledEvents
-      };
-
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
+      const csvStr = Papa.unparse(records);
+      const dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csvStr);
       const downloadAnchorNode = document.createElement('a');
       downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", `rpg_tracker_export_${new Date().toISOString().split('T')[0]}.json`);
-      document.body.appendChild(downloadAnchorNode); // required for firefox
+      downloadAnchorNode.setAttribute("download", `rpg_tracker_export_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(downloadAnchorNode);
       downloadAnchorNode.click();
       downloadAnchorNode.remove();
 
@@ -219,83 +235,96 @@ export default function Settings({ profile }: { profile: UserProfile }) {
 
     try {
       const text = await file.text();
-      const parsedData = JSON.parse(text);
+      
+      Papa.parse(text, {
+        header: true,
+        skipEmptyLines: true,
+        complete: async (results) => {
+          try {
+            const data = results.data as any[];
+            let txCount = 0;
+            let scheduledCount = 0;
 
-      let txCount = 0;
-      let scheduledCount = 0;
+            const txRef = collection(db, "users", uid, "transactions");
+            const scheduledRef = collection(db, "users", uid, "scheduledEvents");
 
-      const txRef = collection(db, "users", uid, "transactions");
-      const scheduledRef = collection(db, "users", uid, "scheduledEvents");
+            let batch = writeBatch(db);
+            let operationCount = 0;
 
-      let batch = writeBatch(db);
-      let operationCount = 0;
+            const commitBatchIfNeeded = async () => {
+              if (operationCount > 0) {
+                await batch.commit();
+                batch = writeBatch(db);
+                operationCount = 0;
+              }
+            };
 
-      const commitBatchIfNeeded = async () => {
-        if (operationCount > 0) {
-          await batch.commit();
-          batch = writeBatch(db);
-          operationCount = 0;
+            for (const row of data) {
+              if (row.entity_type === 'transaction') {
+                const docRef = doc(txRef);
+                const dataToSave: any = {
+                  type: row.type,
+                  amount: Number(row.amount),
+                  category: row.category,
+                  rune: row.rune,
+                  timestamp: row.timestamp ? Timestamp.fromDate(new Date(row.timestamp)) : Timestamp.now()
+                };
+                if (row.description) dataToSave.description = row.description;
+                
+                batch.set(docRef, dataToSave);
+                operationCount++;
+                txCount++;
+              } else if (row.entity_type === 'scheduledEvent') {
+                const docRef = doc(scheduledRef);
+                const dataToSave: any = {
+                  type: row.type,
+                  name: row.name,
+                  amount: Number(row.amount),
+                  category: row.category,
+                  rune: row.rune,
+                  frequency: row.frequency,
+                  frequencyValue: Number(row.frequencyValue),
+                  autoLog: row.autoLog === 'true',
+                  nextDueDate: row.nextDueDate ? Timestamp.fromDate(new Date(row.nextDueDate)) : Timestamp.now(),
+                  createdAt: row.createdAt ? Timestamp.fromDate(new Date(row.createdAt)) : serverTimestamp()
+                };
+                if (row.lastLoggedAt) dataToSave.lastLoggedAt = Timestamp.fromDate(new Date(row.lastLoggedAt));
+                
+                batch.set(docRef, dataToSave);
+                operationCount++;
+                scheduledCount++;
+              }
+
+              if (operationCount >= 400) await commitBatchIfNeeded();
+            }
+
+            await commitBatchIfNeeded();
+
+            setImportExportMsg({ type: 'success', text: language === "id" 
+              ? `Impor berhasil: ${txCount} transaksi, ${scheduledCount} event.` 
+              : `Import successful: ${txCount} transactions, ${scheduledCount} events.` });
+          } catch (err: any) {
+             console.error("Import error internally:", err);
+             setImportExportMsg({ type: 'error', text: language === "id" ? `Gagal: ${err.message}` : `Failed: ${err.message}` });
+          } finally {
+            setImporting(false);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+          }
+        },
+        error: (error) => {
+            console.error("CSV Parse error:", error);
+            setImportExportMsg({ type: 'error', text: language === "id" ? `Gagal parse CSV` : `Failed to parse CSV` });
+            setImporting(false);
+            if (fileInputRef.current) fileInputRef.current.value = "";
         }
-      };
-
-      if (Array.isArray(parsedData.transactions)) {
-        for (const tx of parsedData.transactions) {
-          const docRef = doc(txRef);
-          const dataToSave = { ...tx };
-          delete dataToSave.id; // Don't save old ID as a field
-          if (dataToSave.timestamp) {
-            dataToSave.timestamp = Timestamp.fromDate(new Date(dataToSave.timestamp));
-          } else {
-            dataToSave.timestamp = Timestamp.now();
-          }
-          batch.set(docRef, dataToSave);
-          operationCount++;
-          txCount++;
-
-          if (operationCount >= 400) await commitBatchIfNeeded();
-        }
-      }
-
-      if (Array.isArray(parsedData.scheduledEvents)) {
-        for (const ev of parsedData.scheduledEvents) {
-          const docRef = doc(scheduledRef);
-          const dataToSave = { ...ev };
-          delete dataToSave.id;
-          if (dataToSave.nextDueDate) {
-            dataToSave.nextDueDate = Timestamp.fromDate(new Date(dataToSave.nextDueDate));
-          } else {
-            dataToSave.nextDueDate = Timestamp.now();
-          }
-          if (dataToSave.createdAt) {
-            dataToSave.createdAt = Timestamp.fromDate(new Date(dataToSave.createdAt));
-          } else {
-            dataToSave.createdAt = serverTimestamp();
-          }
-          if (dataToSave.lastLoggedAt) {
-            dataToSave.lastLoggedAt = Timestamp.fromDate(new Date(dataToSave.lastLoggedAt));
-          }
-          
-          batch.set(docRef, dataToSave);
-          operationCount++;
-          scheduledCount++;
-
-          if (operationCount >= 400) await commitBatchIfNeeded();
-        }
-      }
-
-      await commitBatchIfNeeded();
-
-      setImportExportMsg({ type: 'success', text: language === "id" 
-        ? `Impor berhasil: ${txCount} transaksi, ${scheduledCount} event.` 
-        : `Import successful: ${txCount} transactions, ${scheduledCount} events.` });
+      });
         
     } catch (e: any) {
       console.error("Import error:", e);
       setImportExportMsg({ type: 'error', text: language === "id" ? `Gagal: ${e.message}` : `Failed: ${e.message}` });
-    } finally {
       setImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
-    }
+    } 
   };
 
   return (
@@ -415,20 +444,6 @@ export default function Settings({ profile }: { profile: UserProfile }) {
               className="w-6 h-6 border-4 border-black checked:bg-[#ffcc00] cursor-pointer"
             />
           </label>
-          <label className="flex items-center gap-4 cursor-pointer">
-             <span className="block font-sans text-sm md:text-base uppercase font-bold tracking-widest text-[#3e2723] flex-1">
-              Ambient Music {musicEnabled ? "🎵" : "🔇"}
-            </span>
-            <input 
-              type="checkbox" 
-              checked={musicEnabled} 
-              onChange={(e) => {
-                setMusicEnabled(e.target.checked);
-                import('../audio').then(module => module.setMusicState(e.target.checked));
-              }}
-              className="w-6 h-6 border-4 border-black checked:bg-[#ffcc00] cursor-pointer"
-            />
-          </label>
         </div>
 
         <button
@@ -507,11 +522,11 @@ export default function Settings({ profile }: { profile: UserProfile }) {
               disabled={exporting || importing}
               className="w-full py-2 bg-[#ffcc00] hover:bg-yellow-500 text-[#3e2723] border-4 border-black font-bold text-xs tracking-wider uppercase shadow-[2px_2px_0_0_#000] active:translate-y-1 active:shadow-none transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {exporting ? "..." : "⬇️ " + (language === "id" ? "Ekspor JSON" : "Export JSON")}
+              {exporting ? "..." : "⬇️ " + (language === "id" ? "Ekspor CSV" : "Export CSV")}
             </button>
             <input
               type="file"
-              accept=".json"
+              accept=".csv"
               ref={fileInputRef}
               onChange={handleImportFileChange}
               className="hidden"
@@ -521,7 +536,7 @@ export default function Settings({ profile }: { profile: UserProfile }) {
               disabled={exporting || importing}
               className="w-full py-2 bg-white hover:bg-gray-100 text-[#3e2723] border-4 border-black font-bold text-xs tracking-wider uppercase shadow-[2px_2px_0_0_#000] active:translate-y-1 active:shadow-none transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {importing ? "..." : "⬆️ " + (language === "id" ? "Impor JSON" : "Import JSON")}
+              {importing ? "..." : "⬆️ " + (language === "id" ? "Impor CSV" : "Import CSV")}
             </button>
           </div>
           {importExportMsg && (

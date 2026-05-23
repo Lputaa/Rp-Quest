@@ -13,6 +13,10 @@ export interface UserProfile {
   mainQuestName?: string; // legacy
   mainQuestTarget?: number; // legacy
   mainQuestProgress?: number; // legacy
+  currentStreak?: number;
+  longestStreak?: number;
+  lastActivityDate?: string;
+  badges?: string[];
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
