@@ -3,7 +3,7 @@ import { Transaction, UserProfile } from "../types";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "motion/react";
 import { playSFX } from "../audio";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db, auth } from "../lib/firebase";
 import { Flame, Medal, Award, Crown } from "lucide-react";
 import { useAppStore } from "../store";
@@ -89,6 +89,7 @@ export default function HolyFire({
 
           await updateDoc(doc(db, "users", uid), {
             badges: [...currentBadges, ...newBadges.map((b) => b.id)],
+            updatedAt: serverTimestamp(),
           });
         } catch (err) {
           console.error("Failed to unlock badge:", err);

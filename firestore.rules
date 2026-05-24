@@ -27,6 +27,10 @@ service cloud.firestore {
              (!('mainQuestProgress' in data) || (data.mainQuestProgress is number && data.mainQuestProgress >= 0)) &&
              (!('vaultQuests' in data) || (data.vaultQuests is list && data.vaultQuests.size() <= 5)) &&
              (!('completedVaultQuests' in data) || (data.completedVaultQuests is list)) &&
+             (!('badges' in data) || (data.badges is list)) &&
+             (!('currentStreak' in data) || (data.currentStreak is number)) &&
+             (!('longestStreak' in data) || (data.longestStreak is number)) &&
+             (!('lastActivityDate' in data) || (data.lastActivityDate is string)) &&
              data.createdAt == request.time &&
              data.updatedAt == request.time;
     }
@@ -45,8 +49,11 @@ service cloud.firestore {
              (!('mainQuestProgress' in data) || (data.mainQuestProgress is number && data.mainQuestProgress >= 0)) &&
              (!('vaultQuests' in data) || (data.vaultQuests is list && data.vaultQuests.size() <= 5)) &&
              (!('completedVaultQuests' in data) || (data.completedVaultQuests is list)) &&
-             data.updatedAt == request.time &&
-             data.createdAt == existing().createdAt;
+             (!('badges' in data) || (data.badges is list)) &&
+             (!('currentStreak' in data) || (data.currentStreak is number)) &&
+             (!('longestStreak' in data) || (data.longestStreak is number)) &&
+             (!('lastActivityDate' in data) || (data.lastActivityDate is string)) &&
+             data.updatedAt == request.time;
     }
 
     function isValidTransaction(data) {
